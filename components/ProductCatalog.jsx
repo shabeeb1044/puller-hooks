@@ -6,6 +6,9 @@ export default function ProductCatalog({
   products,
   searchPlaceholder = 'Search products',
   showSearch = true,
+  yellow = false,
+  eyebrow = null,
+  title = null,
 }) {
   const [query, setQuery] = useState('');
 
@@ -52,8 +55,23 @@ export default function ProductCatalog({
         </div>
       ) : null}
 
-      <section className="catalog" id="catalog" aria-label="Product listing">
+      <section
+        className={`catalog${yellow ? ' catalog--yellow' : ''}`}
+        id="catalog"
+        aria-labelledby={title ? 'catalog-title' : undefined}
+        aria-label={title ? undefined : 'Product listing'}
+      >
         <div className="container">
+          {(eyebrow || title) && (
+            <header className="range-head reveal">
+              {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
+              {title ? (
+                <h2 id="catalog-title" className="section-title">
+                  {title}
+                </h2>
+              ) : null}
+            </header>
+          )}
           {horizontal.length > 0 ? (
             <div className="catalog-grid" id="catalogGrid">
               {horizontal.map((product) => (

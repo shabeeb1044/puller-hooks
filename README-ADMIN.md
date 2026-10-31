@@ -19,7 +19,39 @@ Admin panel: [http://localhost:3000/admin](http://localhost:3000/admin)
 5. Remove `ADMIN_SETUP_PASSWORD` from `.env` after seeding
 6. Sign in at `/admin/login` and change the password under **Settings** before production use
 
-Passwords are stored only as bcrypt hashes in SQLite (`prisma/dev.db`).
+Passwords are stored only as bcrypt hashes (local SQLite or Turso).
+
+## Turso (free remote SQLite)
+
+When both `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set, the app uses Turso at runtime. Local `DATABASE_URL=file:./dev.db` is still used for `prisma migrate`.
+
+```bash
+# 1) Create / migrate schema locally
+npm run db:migrate
+
+# 2) Push the same SQL to Turso
+npm run db:push:turso
+
+# 3) Seed Turso (uses Turso when env vars are set)
+# Set ADMIN_SETUP_PASSWORD in .env first
+npm run db:seed
+```
+
+## Cloudflare deploy (OpenNext Workers)
+
+```bash
+# Preview Workers runtime locally
+npm run preview
+
+# Deploy
+npx wrangler login
+npx wrangler secret put TURSO_DATABASE_URL
+npx wrangler secret put TURSO_AUTH_TOKEN
+npx wrangler secret put AUTH_SECRET
+npm run deploy
+```
+
+**Note:** Admin image uploads write to `public/uploads` on disk. That does not persist on Cloudflare Workers — use Cloudflare R2 (or keep uploads on a Node host) for production media.
 
 ## Admin sections
 

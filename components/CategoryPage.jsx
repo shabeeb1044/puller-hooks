@@ -25,7 +25,11 @@ export default function CategoryPage({
     crumbs.push({ label: category.name, current: true });
   }
 
-  const yellow = bannerVariant === 'yellow' || category?.slug === 'hard-body-lures' || subcategory?.slug === 'flash-striker';
+  const yellow =
+    bannerVariant === 'yellow' ||
+    category?.slug === 'hard-body-lures' ||
+    category?.slug === 'hooks' ||
+    subcategory?.slug === 'flash-striker';
 
   // Group vertical products by subcategory name when on a category page
   const verticalByGroup = {};
@@ -98,7 +102,11 @@ export default function CategoryPage({
       )}
 
       {useGroupedHooks ? (
-        <section className="range-section" id="product-range" aria-labelledby="range-title">
+        <section
+          className={`range-section${yellow ? ' range-section--yellow' : ''}`}
+          id="product-range"
+          aria-labelledby="range-title"
+        >
           <div className="container">
             <header className="range-head reveal">
               <p className="section-eyebrow">Product Styles</p>
@@ -125,13 +133,19 @@ export default function CategoryPage({
             </div>
             {horizontal.length > 0 ? (
               <div style={{ marginTop: '2rem' }}>
-                <ProductCatalog products={horizontal} showSearch={false} />
+                <ProductCatalog products={horizontal} showSearch={false} yellow={yellow} />
               </div>
             ) : null}
           </div>
         </section>
       ) : products.length > 0 ? (
-        <ProductCatalog products={products} showSearch={false} />
+        <ProductCatalog
+          products={products}
+          showSearch={false}
+          yellow={yellow}
+          eyebrow={yellow ? 'Product Styles' : null}
+          title={yellow ? 'Designed for every technique' : null}
+        />
       ) : (
         <section className="range-section">
           <div className="container">

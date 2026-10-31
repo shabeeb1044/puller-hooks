@@ -1,11 +1,15 @@
 node_modules
 .next
+.open-next
 out
 .DS_Store
 *.log
 .env
 .env*.local
+.dev.vars
 prisma/*.db
 prisma/*.db-journal
 public/uploads/*
 !public/uploads/.gitkeep
+cloudflare-env.d.ts
+wrangler.toml.bak

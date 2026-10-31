@@ -7,14 +7,20 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "node prisma/seed.js",
-    "db:setup": "prisma migrate dev && node prisma/seed.js",
+    "db:seed": "node --env-file=.env prisma/seed.js",
+    "db:push:turso": "node --env-file=.env scripts/push-turso-schema.js",
+    "db:setup": "prisma migrate dev && node --env-file=.env prisma/seed.js",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node --env-file=.env prisma/seed.js"
   },
   "dependencies": {
+    "@libsql/client": "0.8.1",
+    "@prisma/adapter-libsql": "5.22.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.14",
@@ -25,6 +31,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "prisma": "^5.22.0"
+    "@opennextjs/cloudflare": "^1.20.15",
+    "prisma": "^5.22.0",
+    "wrangler": "^4.156.0"
   }
 }

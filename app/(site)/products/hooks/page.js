@@ -35,5 +35,5 @@ export default async function HooksPage() {
     );
   }
 
-  return <CategoryPage category={category} products={products} />;
+  return <CategoryPage category={category} products={products} bannerVariant="yellow" />;
 }

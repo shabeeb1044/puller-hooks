@@ -1,10 +1,25 @@
 /* eslint-disable no-console */
 const { PrismaClient } = require('@prisma/client');
+const { PrismaLibSQL } = require('@prisma/adapter-libsql');
+const { createClient } = require('@libsql/client');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
-const prisma = new PrismaClient();
+function createPrisma() {
+  const url = process.env.TURSO_DATABASE_URL;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
+  if (url && authToken) {
+    console.log('Seeding Turso database…');
+    return new PrismaClient({
+      adapter: new PrismaLibSQL(createClient({ url, authToken })),
+    });
+  }
+  console.log('Seeding local SQLite (DATABASE_URL)…');
+  return new PrismaClient();
+}
+
+const prisma = createPrisma();
 
 function loadCatalog() {
   const catalogPath = path.join(__dirname, '..', 'lib', 'catalog.json');
@@ -14,14 +29,18 @@ function loadCatalog() {
 async function ensureAdmin() {
   const email = (process.env.ADMIN_SETUP_EMAIL || 'sales@pullertackle.com').toLowerCase().trim();
   const password = process.env.ADMIN_SETUP_PASSWORD;
-  if (!password) {
-    throw new Error('ADMIN_SETUP_PASSWORD must be set in the environment for seeding.');
-  }
 
   const existing = await prisma.adminUser.findUnique({ where: { email } });
   if (existing) {
     console.log(`Admin already exists: ${email}`);
     return existing;
+  }
+
+  if (!password) {
+    console.warn(
+      'ADMIN_SETUP_PASSWORD not set — skipping admin create. Set it and re-run seed to create the first admin.'
+    );
+    return null;
   }
 
   const passwordHash = await bcrypt.hash(password, 12);

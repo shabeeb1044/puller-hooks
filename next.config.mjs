@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
+  serverExternalPackages: ['@prisma/client', '.prisma/client', 'bcryptjs'],
   async redirects() {
     return [
       { source: '/index.html', destination: '/', permanent: true },
@@ -48,3 +48,13 @@ const nextConfig = {
 };
 
 export default nextConfig;
+
+// Optional Cloudflare bindings for `next dev` (OpenNext).
+// Opt-in via OPENNEXT_CLOUDFLARE_DEV=1 — workerd/miniflare can crash on some Windows setups.
+if (process.env.OPENNEXT_CLOUDFLARE_DEV === '1') {
+  import('@opennextjs/cloudflare')
+    .then(({ initOpenNextCloudflareForDev }) => initOpenNextCloudflareForDev())
+    .catch((err) => {
+      console.warn('[opennext] Cloudflare dev init skipped:', err?.message || err);
+    });
+}
