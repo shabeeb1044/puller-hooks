@@ -1,0 +1,388 @@
+/* Country + phone on one row: narrow country, wide phone */
+.field-row {
+  display: grid;
+  gap: 1.1rem;
+  min-width: 0;
+}
+
+.field-row--phone {
+  grid-template-columns: minmax(11rem, 1fr) minmax(12rem, 1.35fr);
+  grid-column: 1 / -1;
+  align-items: start;
+}
+
+.field-row--phone > .field {
+  min-width: 0;
+}
+
+.field-row--phone .field--country .country-select__input {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field-row--phone .country-select__panel {
+  right: auto;
+  width: max(100%, 16rem);
+  min-width: min(18rem, 70vw);
+}
+
+@media (max-width: 640px) {
+  .field-row--phone {
+    grid-template-columns: 1fr;
+  }
+
+  .field-row--phone .country-select__panel {
+    right: 0;
+    width: auto;
+    min-width: 0;
+  }
+}
+
+/* Country combobox + phone input (contact / dealer forms) */
+:root {
+  --form-bg: #050505;
+  --form-border: #2c2c2c;
+  --form-border-focus: var(--yellow, #f7ed22);
+  --form-text: #fff;
+  --form-muted: #8b9199;
+  --form-panel-bg: #000;
+  --form-panel-border: #6a6a6a;
+  --form-hover: #9ec1f3;
+  --form-error: var(--red, #d81e37);
+  --form-flag-border: #d0d0d0;
+  --form-ring: rgba(247, 237, 34, 0.35);
+}
+
+.country-select {
+  position: relative;
+  min-width: 0;
+}
+
+.country-select__trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 48px;
+  background: var(--form-bg);
+  border: 1px solid var(--form-border);
+  border-radius: 2px;
+  padding: 0 0.75rem 0 1rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.country-select.is-open .country-select__trigger,
+.country-select__trigger:focus-within {
+  border-color: var(--form-border-focus);
+  box-shadow: 0 0 0 3px var(--form-ring);
+}
+
+.country-select__flag {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  width: 20px;
+  min-height: 15px;
+}
+
+.country-select__flag .fi,
+.country-select__option-flag.fi {
+  flex: none;
+  display: inline-block;
+  width: 20px;
+  height: 15px;
+  border-radius: 2px;
+  border: 1px solid var(--form-flag-border);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  line-height: 15px;
+  vertical-align: middle;
+}
+
+/* Beat .field input (width/border/padding) — nested chrome lives on the trigger */
+.field .country-select__input,
+.dealer-field .country-select__input,
+.apply-field .country-select__input,
+.country-select__input {
+  flex: 1 1 0%;
+  width: 0;
+  min-width: 0;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--form-text);
+  font: inherit;
+  padding: 0.85rem 0;
+  box-shadow: none;
+}
+
+.field .country-select__input:focus,
+.dealer-field .country-select__input:focus,
+.apply-field .country-select__input:focus,
+.country-select__input:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.country-select__input::placeholder {
+  color: var(--form-muted);
+}
+
+.country-select__chevron {
+  flex: none;
+  color: var(--form-muted);
+  cursor: pointer;
+  user-select: none;
+  padding: 0.35rem;
+}
+
+.country-select__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  background: var(--form-panel-bg);
+  border: 1px solid var(--form-panel-border);
+  border-radius: 2px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.country-select__panel[hidden] {
+  display: none;
+}
+
+.country-select__search {
+  width: 100%;
+  flex: none;
+  border: 0;
+  border-bottom: 1px solid var(--form-border);
+  border-radius: 0;
+  background: #0e0e0e;
+  color: var(--form-text);
+  font: inherit;
+  padding: 0.7rem 1rem;
+}
+
+.country-select__search:focus {
+  outline: 2px solid var(--form-border-focus);
+  outline-offset: 2px;
+}
+
+.country-select__alpha {
+  flex: none;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.2rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--form-border);
+  background: #0a0a0a;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a transparent;
+}
+
+.country-select__letter {
+  flex: none;
+  min-width: 1.55rem;
+  height: 1.55rem;
+  padding: 0 0.3rem;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--form-muted);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.country-select__letter:hover:not(:disabled) {
+  color: #fff;
+  background: #1a1a1a;
+}
+
+.country-select__letter.is-active {
+  color: #111;
+  background: var(--form-border-focus);
+}
+
+.country-select__letter:disabled,
+.country-select__letter.is-empty {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.country-select__letter:focus-visible {
+  outline: 2px solid var(--form-border-focus);
+  outline-offset: 1px;
+}
+
+.country-select__list {
+  margin: 0;
+  padding: 0.3rem 0;
+  list-style: none;
+  overflow-y: auto;
+  max-height: 220px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a #111;
+}
+
+@media (max-width: 480px) {
+  .country-select__panel {
+    max-height: min(70vh, 360px);
+  }
+
+  .country-select__letter {
+    min-width: 1.7rem;
+    height: 1.7rem;
+    font-size: 0.75rem;
+  }
+}
+
+.country-select__option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  color: var(--form-text);
+}
+
+.country-select__option:hover,
+.country-select__option.is-active {
+  background: var(--form-hover);
+  color: #111;
+}
+
+.country-select__option.is-selected:not(.is-active):not(:hover) {
+  box-shadow: inset 3px 0 0 var(--form-border-focus);
+}
+
+.country-select__option-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.country-select__empty {
+  padding: 0.75rem 1rem;
+  color: var(--form-muted);
+}
+
+.phone-input {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.phone-input__control {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  min-height: 48px;
+  box-sizing: border-box;
+  background: var(--form-bg);
+  border: 1px solid var(--form-border);
+  border-radius: 2px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.phone-input__control:focus-within {
+  border-color: var(--form-border-focus);
+  box-shadow: 0 0 0 3px var(--form-ring);
+}
+
+.phone-input__prefix {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-width: 3.6rem;
+  padding: 0 0.75rem;
+  border-right: 1px solid var(--form-border);
+  color: #fff;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+/* Beat .field input — nested chrome lives on .phone-input__control */
+.field .phone-input__number,
+.dealer-field .phone-input__number,
+.apply-field .phone-input__number,
+.phone-input__number {
+  flex: 1 1 0%;
+  width: 0;
+  min-width: 0;
+  max-width: none;
+  border: 0;
+  background: transparent;
+  color: var(--form-text);
+  font: inherit;
+  padding: 0.85rem 1rem;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.field .phone-input__number:focus,
+.dealer-field .phone-input__number:focus,
+.apply-field .phone-input__number:focus,
+.phone-input__number:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.phone-input__number::placeholder {
+  color: #c5cad3;
+}
+
+.field .req,
+.dealer-field .req,
+.apply-field .req {
+  color: var(--form-error);
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--form-error);
+}
+
+.field-error[hidden] {
+  display: none;
+}
+
+.field.has-error .country-select__trigger,
+.apply-field.has-error .country-select__trigger,
+.dealer-field.has-error .country-select__trigger,
+.field.has-error .phone-input__control,
+.apply-field.has-error .phone-input__control,
+.dealer-field.has-error .phone-input__control {
+  border-color: var(--form-error);
+  box-shadow: 0 0 0 3px rgba(216, 30, 55, 0.2);
+}
+
+.country-select__input:focus-visible,
+.phone-input__number:focus-visible,
+.country-select__search:focus-visible {
+  outline: 2px solid var(--form-border-focus);
+  outline-offset: 2px;
+}
+
+.country-select__option:focus-visible {
+  outline: 2px solid var(--form-border-focus);
+  outline-offset: -2px;
+}

@@ -1,0 +1,247 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import ImageField from './ImageField';
+
+function linesFromJson(value) {
+  if (!value) return '';
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.join('\n') : String(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function slugify(text) {
+  return String(text || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+
+export default function ProductForm({ productId }) {
+  const router = useRouter();
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [slugTouched, setSlugTouched] = useState(!!productId);
+  const [form, setForm] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    specifications: '',
+    features: '',
+    image: '',
+    imageAlt: '',
+    status: 'draft',
+    layout: 'horizontal',
+    sortOrder: 0,
+    ctaLabel: 'Inquiry now',
+    ctaHref: '/dealers#apply',
+    searchTerms: '',
+    categoryId: '',
+    subcategoryId: '',
+  });
+
+  useEffect(() => {
+    fetch('/api/admin/categories')
+      .then((r) => r.json())
+      .then((d) => setCategories(d.categories || []));
+  }, []);
+
+  useEffect(() => {
+    if (!productId) return;
+    fetch(`/api/admin/products/${productId}`)
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to load');
+        const p = d.product;
+        setForm({
+          name: p.name || '',
+          slug: p.slug || '',
+          description: p.description || '',
+          specifications: linesFromJson(p.specifications),
+          features: linesFromJson(p.features),
+          image: p.image || '',
+          imageAlt: p.imageAlt || '',
+          status: p.status || 'draft',
+          layout: p.layout || 'horizontal',
+          sortOrder: p.sortOrder ?? 0,
+          ctaLabel: p.ctaLabel || 'Inquiry now',
+          ctaHref: p.ctaHref || '/dealers#apply',
+          searchTerms: p.searchTerms || '',
+          categoryId: p.categoryId || '',
+          subcategoryId: p.subcategoryId || '',
+        });
+        setSlugTouched(true);
+      })
+      .catch((e) => setError(e.message));
+  }, [productId]);
+
+  useEffect(() => {
+    if (!form.categoryId) {
+      setSubcategories([]);
+      return;
+    }
+    fetch(`/api/admin/subcategories?categoryId=${form.categoryId}`)
+      .then((r) => r.json())
+      .then((d) => setSubcategories(d.subcategories || []));
+  }, [form.categoryId]);
+
+  function setField(key, value) {
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === 'name' && !slugTouched) next.slug = slugify(value);
+      if (key === 'categoryId') next.subcategoryId = '';
+      return next;
+    });
+  }
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const payload = {
+        ...form,
+        sortOrder: Number(form.sortOrder) || 0,
+        subcategoryId: form.subcategoryId || null,
+      };
+      const res = await fetch(productId ? `/api/admin/products/${productId}` : '/api/admin/products', {
+        method: productId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      router.push('/admin/products');
+      router.refresh();
+    } catch (err) {
+      setError(err.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="admin-form" onSubmit={onSubmit}>
+      {error ? <div className="admin-error">{error}</div> : null}
+
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label htmlFor="name">Product name</label>
+          <input id="name" value={form.name} onChange={(e) => setField('name', e.target.value)} required />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="slug">Slug</label>
+          <input
+            id="slug"
+            value={form.slug}
+            onChange={(e) => {
+              setSlugTouched(true);
+              setField('slug', e.target.value);
+            }}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="admin-field">
+        <label htmlFor="description">Description</label>
+        <textarea id="description" rows={3} value={form.description} onChange={(e) => setField('description', e.target.value)} />
+      </div>
+
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label htmlFor="specifications">Specifications (one per line)</label>
+          <textarea id="specifications" rows={5} value={form.specifications} onChange={(e) => setField('specifications', e.target.value)} />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="features">Features (one per line)</label>
+          <textarea id="features" rows={5} value={form.features} onChange={(e) => setField('features', e.target.value)} />
+        </div>
+      </div>
+
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label htmlFor="categoryId">Category</label>
+          <select id="categoryId" value={form.categoryId} onChange={(e) => setField('categoryId', e.target.value)} required>
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="admin-field">
+          <label htmlFor="subcategoryId">Subcategory</label>
+          <select id="subcategoryId" value={form.subcategoryId} onChange={(e) => setField('subcategoryId', e.target.value)}>
+            <option value="">None</option>
+            {subcategories.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label htmlFor="status">Status</label>
+          <select id="status" value={form.status} onChange={(e) => setField('status', e.target.value)}>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+        <div className="admin-field">
+          <label htmlFor="layout">Display layout</label>
+          <select id="layout" value={form.layout} onChange={(e) => setField('layout', e.target.value)}>
+            <option value="horizontal">Horizontal</option>
+            <option value="vertical">Vertical</option>
+          </select>
+        </div>
+      </div>
+
+      <ImageField label="Product image" value={form.image} onChange={(v) => setField('image', v)} />
+
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label htmlFor="imageAlt">Image alt text</label>
+          <input id="imageAlt" value={form.imageAlt} onChange={(e) => setField('imageAlt', e.target.value)} />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="sortOrder">Sort order</label>
+          <input id="sortOrder" type="number" value={form.sortOrder} onChange={(e) => setField('sortOrder', e.target.value)} />
+        </div>
+      </div>
+
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label htmlFor="ctaLabel">CTA label</label>
+          <input id="ctaLabel" value={form.ctaLabel} onChange={(e) => setField('ctaLabel', e.target.value)} />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="ctaHref">CTA link</label>
+          <input id="ctaHref" value={form.ctaHref} onChange={(e) => setField('ctaHref', e.target.value)} />
+        </div>
+      </div>
+
+      <div className="admin-field">
+        <label htmlFor="searchTerms">Search terms</label>
+        <input id="searchTerms" value={form.searchTerms} onChange={(e) => setField('searchTerms', e.target.value)} />
+      </div>
+
+      <div className="admin-actions">
+        <button className="admin-btn" type="submit" disabled={saving}>
+          {saving ? 'Saving…' : productId ? 'Update product' : 'Create product'}
+        </button>
+        <button className="admin-btn admin-btn-ghost" type="button" onClick={() => router.push('/admin/products')}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
