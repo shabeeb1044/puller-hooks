@@ -46,7 +46,11 @@ export async function middleware(request) {
     }
   }
 
-  if (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/login')) {
+  if (
+    pathname.startsWith('/api/admin') &&
+    !pathname.startsWith('/api/admin/login') &&
+    !pathname.startsWith('/api/admin/env-check')
+  ) {
     if (!(await isAuthed(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

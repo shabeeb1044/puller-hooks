@@ -175,6 +175,8 @@
     var business = form.querySelector('[name="company"], [name="business_name"]');
     var name = form.querySelector('[name="name"]');
     var email = form.querySelector('[name="email"]');
+    var address = form.querySelector('[name="address"]');
+    var postal = form.querySelector('[name="postal_code"], [name="postalCode"]');
     var city = form.querySelector('[name="city"], [name="region"]');
     var country = form.querySelector('.country-select');
     var phone = form.querySelector('.phone-input');
@@ -184,6 +186,8 @@
     if (name && !validateRequiredText(name, 'Name')) ok = false;
     if (email && !validateEmail(email)) ok = false;
     if (country && !validateCountry(country)) ok = false;
+    if (address && address.hasAttribute('required') && !validateRequiredText(address, 'Physical Store Address')) ok = false;
+    if (postal && postal.hasAttribute('required') && !validateRequiredText(postal, 'Zip / Postal Code')) ok = false;
     if (city && !validateRequiredText(city, 'City / region')) ok = false;
     if (phone && !validatePhone(phone)) ok = false;
     if (message && message.hasAttribute('required') && !validateRequiredText(message, 'Message')) ok = false;
@@ -242,8 +246,14 @@
         body: JSON.stringify(formPayload(form))
       })
         .then(function (res) {
-          return res.json().then(function (data) {
-            if (!res.ok) throw new Error(data.error || 'Unable to send message.');
+          return res.text().then(function (text) {
+            var data = null;
+            try {
+              data = text ? JSON.parse(text) : null;
+            } catch (e) {
+              throw new Error('Server returned an invalid response. Please try again.');
+            }
+            if (!res.ok) throw new Error((data && data.error) || 'Unable to send message.');
             return data;
           });
         })
@@ -294,8 +304,14 @@
         body: JSON.stringify(formPayload(form))
       })
         .then(function (res) {
-          return res.json().then(function (data) {
-            if (!res.ok) throw new Error(data.error || 'Unable to submit application.');
+          return res.text().then(function (text) {
+            var data = null;
+            try {
+              data = text ? JSON.parse(text) : null;
+            } catch (e) {
+              throw new Error('Server returned an invalid response. Please try again.');
+            }
+            if (!res.ok) throw new Error((data && data.error) || 'Unable to submit application.');
             return data;
           });
         })

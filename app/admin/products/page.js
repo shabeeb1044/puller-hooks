@@ -16,6 +16,11 @@ export default function AdminProductsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get('categoryId') || '';
+    if (fromUrl) setCategoryId(fromUrl);
+  }, []);
+
+  useEffect(() => {
     fetch('/api/admin/categories')
       .then((r) => r.json())
       .then((d) => setCategories(d.categories || []))

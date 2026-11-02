@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { withAdmin, jsonOk, jsonError, readJson } from '@/lib/api';
 import { slugify } from '@/lib/cms';
+import { menuLinkPayload } from '@/lib/menuLinks';
 
 const schema = z.object({
   name: z.string().min(1),
@@ -12,6 +13,9 @@ const schema = z.object({
   bannerImage: z.string().optional().nullable(),
   visible: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
+  menuLinkType: z.enum(['page', 'product', 'custom', 'section']).optional(),
+  menuAnchor: z.string().optional().nullable(),
+  menuProductId: z.string().optional().nullable(),
   pageTitle: z.string().optional().nullable(),
   pageLead: z.string().optional().nullable(),
 });
@@ -48,6 +52,7 @@ export async function PUT(request, { params }) {
           bannerImage: data.bannerImage || null,
           visible: data.visible,
           sortOrder: data.sortOrder,
+          ...menuLinkPayload(data),
           pageTitle: data.pageTitle || null,
           pageLead: data.pageLead || null,
         },

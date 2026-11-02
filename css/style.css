@@ -2934,6 +2934,14 @@ body.modal-open { overflow: hidden; }
   font-size: clamp(1.05rem, 1.6vw, 1.18rem);
   font-weight: 500;
   line-height: 1.65;
+  max-width: 62ch;
+}
+.story-about-lead:last-of-type {
+  margin-bottom: 0;
+}
+.story-about-copy strong {
+  color: #fff;
+  font-weight: 700;
 }
 .story-about-copy > p:not(.section-eyebrow):not(.story-about-lead) {
   margin: 0;
@@ -3274,6 +3282,10 @@ body.modal-open { overflow: hidden; }
   background: #070707;
   border-top: 1px solid #1c1c1c;
   padding: clamp(3.2rem, 7vw, 5.5rem) 0;
+  color: #fff;
+}
+.range-section .section-title {
+  color: #fff;
 }
 .range-head {
   max-width: 64ch;

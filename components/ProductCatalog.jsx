@@ -9,6 +9,7 @@ export default function ProductCatalog({
   yellow = false,
   eyebrow = null,
   title = null,
+  lead = null,
 }) {
   const [query, setQuery] = useState('');
 
@@ -62,7 +63,7 @@ export default function ProductCatalog({
         aria-label={title ? undefined : 'Product listing'}
       >
         <div className="container">
-          {(eyebrow || title) && (
+          {(eyebrow || title || lead) && (
             <header className="range-head reveal">
               {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
               {title ? (
@@ -70,6 +71,7 @@ export default function ProductCatalog({
                   {title}
                 </h2>
               ) : null}
+              {lead ? <p>{lead}</p> : null}
             </header>
           )}
           {horizontal.length > 0 ? (

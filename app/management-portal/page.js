@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { parseJsonResponse } from '@/lib/parseJsonResponse';
 
 function LoginForm() {
   const router = useRouter();
@@ -21,8 +22,9 @@ function LoginForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+      const { data, error: parseError } = await parseJsonResponse(res);
+      if (parseError) throw new Error(parseError);
+      if (!res.ok) throw new Error(data?.error || 'Login failed');
       const next = searchParams.get('next') || '/admin';
       router.push(next);
       router.refresh();

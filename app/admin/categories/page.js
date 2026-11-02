@@ -72,6 +72,7 @@ export default function AdminCategoriesPage() {
                 <>
                   <th>Name</th>
                   <th>Slug</th>
+                  <th>Menu link</th>
                   <th>Visible</th>
                   <th>Counts</th>
                   <th></th>
@@ -83,6 +84,13 @@ export default function AdminCategoriesPage() {
                 <td><strong>{item.name}</strong></td>
                 <td>{item.slug}</td>
                 <td>
+                  {item.menuLinkType === 'product'
+                    ? 'Product'
+                    : item.menuLinkType === 'custom' || item.menuLinkType === 'section'
+                      ? item.menuAnchor || 'Custom'
+                      : 'Category page'}
+                </td>
+                <td>
                   <button type="button" className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => toggleVisible(item)}>
                     {item.visible ? 'Visible' : 'Hidden'}
                   </button>
@@ -90,7 +98,9 @@ export default function AdminCategoriesPage() {
                 <td>{item._count?.subcategories || 0} subs · {item._count?.products || 0} products</td>
                 <td>
                   <div className="admin-actions">
-                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/products/${item.slug}`} target="_blank">View</Link>
+                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/products/${item.slug}`} target="_blank">
+                      View
+                    </Link>
                     <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/categories/${item.id}`}>Edit</Link>
                     <button type="button" className="admin-btn admin-btn-red admin-btn-sm" onClick={() => remove(item.id)}>Delete</button>
                   </div>

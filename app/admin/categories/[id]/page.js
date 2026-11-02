@@ -7,7 +7,7 @@ export default async function EditCategoryPage({ params }) {
       <div className="admin-topbar">
         <div>
           <h1>Edit category</h1>
-          <p>Update name, page content, and navigation visibility.</p>
+          <p>Update basics, then Section 01 (banner), Section 02 (intro), and Products — in website order.</p>
         </div>
       </div>
       <div className="admin-panel">

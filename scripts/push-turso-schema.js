@@ -57,7 +57,7 @@ async function main() {
       } catch (err) {
         const msg = String(err?.message || err);
         // Idempotent re-runs
-        if (/already exists/i.test(msg)) {
+        if (/already exists|duplicate column/i.test(msg)) {
           console.log(`  skip (exists): ${statement.slice(0, 60)}…`);
           continue;
         }

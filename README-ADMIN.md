@@ -39,17 +39,22 @@ npm run db:seed
 
 ## Cloudflare deploy (OpenNext Workers)
 
-```bash
-# Preview Workers runtime locally
-npm run preview
+OpenNext/workerd often crashes on native Windows (`MiniflareCoreError` / access violation). Prefer WSL for local preview, or deploy with the Windows-safe script below (skips local workerd).
 
-# Deploy
+```bash
 npx wrangler login
 npx wrangler secret put TURSO_DATABASE_URL
 npx wrangler secret put TURSO_AUTH_TOKEN
 npx wrangler secret put AUTH_SECRET
+
+# Build + upload (does not start local miniflare)
 npm run deploy
 ```
+
+Worker URL example: `https://fish-hook.<your-subdomain>.workers.dev`  
+Admin login: `/management-portal` on that Worker URL (not the old static Pages preview).
+
+Optional: update [VC++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) if `wrangler`/`preview` still crashes locally.
 
 **Note:** Admin image uploads write to `public/uploads` on disk. That does not persist on Cloudflare Workers — use Cloudflare R2 (or keep uploads on a Node host) for production media.
 

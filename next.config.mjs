@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['@prisma/client', '.prisma/client', 'bcryptjs'],
+  // Required so OpenNext can patch Prisma for the workerd runtime.
+  serverExternalPackages: ['@prisma/client', '.prisma/client'],
   async redirects() {
     return [
       { source: '/index.html', destination: '/', permanent: true },

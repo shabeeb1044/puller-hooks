@@ -2,29 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  categoryPageHref,
+  normalizeMenuLinkType,
+  resolveMenuHref,
+  subcategoryPageHref,
+} from '@/lib/menuLinks';
 
 function isCurrent(pathname, href) {
+  if (!href || href.startsWith('#') || href.includes('#')) return false;
   if (href === '/') return pathname === '/';
+  if (/^https?:\/\//i.test(href)) return false;
   return pathname === href || pathname.startsWith(href + '/');
-}
-
-function categoryHref(category) {
-  // Preserve legacy URLs for seeded categories
-  if (category.slug === 'hard-body-lures') {
-    const flash = category.subcategories?.find((s) => s.slug === 'flash-striker');
-    if (flash) return `/products/flash-striker`;
-  }
-  return `/products/${category.slug}`;
-}
-
-function subcategoryHref(category, subcategory) {
-  if (category.slug === 'hard-body-lures' && subcategory.slug === 'flash-striker') {
-    return '/products/flash-striker';
-  }
-  if (category.slug === 'hooks' && !subcategory) {
-    return '/products/hooks';
-  }
-  return `/products/${category.slug}/${subcategory.slug}`;
 }
 
 export default function Header({ categories = [] }) {
@@ -85,8 +74,13 @@ export default function Header({ categories = [] }) {
               <ul className="dropdown" id="menu-products">
                 {categories.map((category) => {
                   const hasSubs = category.subcategories?.length > 0;
-                  const catHref = categoryHref(category);
-                  const catCurrent = isCurrent(pathname, catHref) || isCurrent(pathname, `/products/${category.slug}`);
+                  const pageHref = categoryPageHref(category);
+                  const catHref = resolveMenuHref(category, { pathname, pageHref });
+                  const linkType = normalizeMenuLinkType(category.menuLinkType);
+                  const catCurrent =
+                    linkType === 'page'
+                      ? isCurrent(pathname, pageHref) || isCurrent(pathname, `/products/${category.slug}`)
+                      : isCurrent(pathname, catHref);
 
                   if (hasSubs) {
                     return (
@@ -105,7 +99,8 @@ export default function Header({ categories = [] }) {
                         </div>
                         <ul className="dropdown" id={`menu-${category.slug}`}>
                           {category.subcategories.map((sub) => {
-                            const href = subcategoryHref(category, sub);
+                            const subPageHref = subcategoryPageHref(category, sub);
+                            const href = resolveMenuHref(sub, { pathname, pageHref: subPageHref });
                             const current = isCurrent(pathname, href);
                             return (
                               <li key={sub.id}>

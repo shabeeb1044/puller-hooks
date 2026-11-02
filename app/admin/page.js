@@ -10,8 +10,14 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     fetch('/api/admin/dashboard')
       .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to load');
+        const text = await res.text();
+        let data = null;
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch {
+          throw new Error('Server returned a web page instead of data. Try signing in again.');
+        }
+        if (!res.ok) throw new Error(data?.error || 'Failed to load');
         setStats(data);
       })
       .catch((e) => setError(e.message));

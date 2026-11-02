@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageField from './ImageField';
+import MenuLinkFields from './MenuLinkFields';
+import { menuLinkPayload, normalizeMenuLinkType } from '@/lib/menuLinks';
 
 function slugify(text) {
   return String(text || '')
@@ -28,6 +30,9 @@ export default function SubcategoryForm({ subcategoryId }) {
     bannerImage: '',
     visible: true,
     sortOrder: 0,
+    menuLinkType: 'page',
+    menuAnchor: '',
+    menuProductId: '',
     pageTitle: '',
     pageLead: '',
   });
@@ -54,6 +59,9 @@ export default function SubcategoryForm({ subcategoryId }) {
           bannerImage: s.bannerImage || '',
           visible: s.visible !== false,
           sortOrder: s.sortOrder ?? 0,
+          menuLinkType: normalizeMenuLinkType(s.menuLinkType),
+          menuAnchor: s.menuAnchor || '',
+          menuProductId: s.menuProductId || '',
           pageTitle: s.pageTitle || '',
           pageLead: s.pageLead || '',
         });
@@ -75,7 +83,11 @@ export default function SubcategoryForm({ subcategoryId }) {
     setSaving(true);
     setError('');
     try {
-      const payload = { ...form, sortOrder: Number(form.sortOrder) || 0 };
+      const payload = {
+        ...form,
+        sortOrder: Number(form.sortOrder) || 0,
+        ...menuLinkPayload(form),
+      };
       const res = await fetch(
         subcategoryId ? `/api/admin/subcategories/${subcategoryId}` : '/api/admin/subcategories',
         {
@@ -98,63 +110,86 @@ export default function SubcategoryForm({ subcategoryId }) {
   return (
     <form className="admin-form" onSubmit={onSubmit}>
       {error ? <div className="admin-error">{error}</div> : null}
-      <div className="admin-form-row">
-        <div className="admin-field">
-          <label htmlFor="name">Name</label>
-          <input id="name" value={form.name} onChange={(e) => setField('name', e.target.value)} required />
+      <fieldset className="admin-form-section">
+        <legend>Basics</legend>
+        <p className="admin-form-section-desc">Subcategory identity and Products menu link.</p>
+        <div className="admin-form-row">
+          <div className="admin-field">
+            <label htmlFor="name">Name</label>
+            <input id="name" value={form.name} onChange={(e) => setField('name', e.target.value)} required />
+          </div>
+          <div className="admin-field">
+            <label htmlFor="slug">Slug</label>
+            <input
+              id="slug"
+              value={form.slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setField('slug', e.target.value);
+              }}
+              required
+            />
+          </div>
         </div>
         <div className="admin-field">
-          <label htmlFor="slug">Slug</label>
-          <input
-            id="slug"
-            value={form.slug}
-            onChange={(e) => {
-              setSlugTouched(true);
-              setField('slug', e.target.value);
-            }}
-            required
-          />
+          <label htmlFor="categoryId">Category</label>
+          <select id="categoryId" value={form.categoryId} onChange={(e) => setField('categoryId', e.target.value)} required>
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
-      </div>
-      <div className="admin-field">
-        <label htmlFor="categoryId">Category</label>
-        <select id="categoryId" value={form.categoryId} onChange={(e) => setField('categoryId', e.target.value)} required>
-          <option value="">Select category</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
-      <div className="admin-field">
-        <label htmlFor="description">Description</label>
-        <textarea id="description" rows={3} value={form.description} onChange={(e) => setField('description', e.target.value)} />
-      </div>
-      <div className="admin-form-row">
+        <div className="admin-form-row">
+          <div className="admin-field">
+            <label htmlFor="sortOrder">Sort order</label>
+            <input id="sortOrder" type="number" value={form.sortOrder} onChange={(e) => setField('sortOrder', e.target.value)} />
+          </div>
+          <div className="admin-field admin-field-check">
+            <label>
+              <input type="checkbox" checked={form.visible} onChange={(e) => setField('visible', e.target.checked)} /> Visible in
+              navigation
+            </label>
+          </div>
+        </div>
+        <MenuLinkFields
+          pageLabel="Subcategory page"
+          menuLinkType={form.menuLinkType}
+          menuAnchor={form.menuAnchor}
+          menuProductId={form.menuProductId}
+          onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+        />
+      </fieldset>
+
+      <fieldset className="admin-form-section">
+        <legend>Page content</legend>
         <div className="admin-field">
-          <label htmlFor="pageTitle">Page title</label>
-          <input id="pageTitle" value={form.pageTitle} onChange={(e) => setField('pageTitle', e.target.value)} />
+          <label htmlFor="description">Description</label>
+          <textarea id="description" rows={3} value={form.description} onChange={(e) => setField('description', e.target.value)} />
+        </div>
+        <div className="admin-form-row">
+          <div className="admin-field">
+            <label htmlFor="pageTitle">Page title</label>
+            <input id="pageTitle" value={form.pageTitle} onChange={(e) => setField('pageTitle', e.target.value)} />
+          </div>
         </div>
         <div className="admin-field">
-          <label htmlFor="sortOrder">Sort order</label>
-          <input id="sortOrder" type="number" value={form.sortOrder} onChange={(e) => setField('sortOrder', e.target.value)} />
+          <label htmlFor="pageLead">Page lead</label>
+          <textarea id="pageLead" rows={3} value={form.pageLead} onChange={(e) => setField('pageLead', e.target.value)} />
         </div>
-      </div>
-      <div className="admin-field">
-        <label htmlFor="pageLead">Page lead</label>
-        <textarea id="pageLead" rows={3} value={form.pageLead} onChange={(e) => setField('pageLead', e.target.value)} />
-      </div>
-      <ImageField label="Image" name="image" value={form.image} onChange={(v) => setField('image', v)} />
-      <ImageField label="Banner image" name="bannerImage" value={form.bannerImage} onChange={(v) => setField('bannerImage', v)} />
-      <div className="admin-field">
-        <label>
-          <input type="checkbox" checked={form.visible} onChange={(e) => setField('visible', e.target.checked)} /> Visible in navigation
-        </label>
-      </div>
+        <ImageField label="Image" name="image" value={form.image} onChange={(v) => setField('image', v)} />
+        <ImageField label="Banner image" name="bannerImage" value={form.bannerImage} onChange={(v) => setField('bannerImage', v)} />
+      </fieldset>
+
       <div className="admin-actions">
         <button className="admin-btn" type="submit" disabled={saving}>
           {saving ? 'Saving…' : subcategoryId ? 'Update subcategory' : 'Create subcategory'}
         </button>
-        <button className="admin-btn admin-btn-ghost" type="button" onClick={() => router.push('/admin/subcategories')}>Cancel</button>
+        <button className="admin-btn admin-btn-ghost" type="button" onClick={() => router.push('/admin/subcategories')}>
+          Cancel
+        </button>
       </div>
     </form>
   );

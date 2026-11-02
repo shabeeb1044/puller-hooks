@@ -6,7 +6,7 @@ export default function NewCategoryPage() {
       <div className="admin-topbar">
         <div>
           <h1>Add category</h1>
-          <p>New categories appear in the Products dropdown when visible.</p>
+          <p>Set basics, then Section 01 (banner), Section 02 (intro), and Products — matching the website.</p>
         </div>
       </div>
       <div className="admin-panel">

@@ -11,8 +11,16 @@ export default function CategoryPage({
   const lead = subcategory?.pageLead || category?.pageLead || subcategory?.description || category?.description || '';
   const image = subcategory?.image || category?.image;
   const bannerImage = subcategory?.bannerImage || category?.bannerImage;
-  const eyebrow = subcategory ? `${category?.name || ''}`.trim() : 'PULLER Products';
-  const aboutTitle = subcategory?.name || category?.name;
+  const eyebrow = subcategory
+    ? `${category?.name || ''}`.trim()
+    : category?.pageSubtitle || 'PULLER Products';
+  const aboutEyebrow = subcategory
+    ? `${subcategory.name} Series`
+    : category?.introSubtitle || 'Our Range';
+  const aboutTitle = subcategory?.name || category?.introTitle || category?.name;
+  const productsEyebrow = category?.productsSubtitle || 'Product Styles';
+  const productsHeading = category?.productsTitle || 'Designed for every technique';
+  const productsLead = category?.productsLead || '';
 
   const crumbs = [
     { href: '/', label: 'Home' },
@@ -25,11 +33,21 @@ export default function CategoryPage({
     crumbs.push({ label: category.name, current: true });
   }
 
-  const yellow =
+  const legacyYellow =
     bannerVariant === 'yellow' ||
+    category?.pageTheme === 'yellow' ||
     category?.slug === 'hard-body-lures' ||
     category?.slug === 'hooks' ||
     subcategory?.slug === 'flash-striker';
+
+  const resolveTheme = (sectionTheme) => {
+    if (sectionTheme === 'yellow' || sectionTheme === 'black') return sectionTheme === 'yellow';
+    return legacyYellow;
+  };
+
+  const bannerYellow = resolveTheme(category?.bannerTheme);
+  const introYellow = resolveTheme(category?.introTheme);
+  const productsYellow = resolveTheme(category?.productsTheme);
 
   // Group vertical products by subcategory name when on a category page
   const verticalByGroup = {};
@@ -48,10 +66,10 @@ export default function CategoryPage({
   return (
     <main id="main">
       <section
-        className={`page-banner flash-striker-banner${yellow ? ' page-banner--yellow' : ''}`}
+        className={`page-banner flash-striker-banner${bannerYellow ? ' page-banner--yellow' : ''}`}
         aria-labelledby="category-title"
       >
-        {bannerImage && !yellow ? (
+        {bannerImage && !bannerYellow ? (
           <>
             <div className="page-banner-media" aria-hidden="true">
               <img src={bannerImage} alt="" width="1920" height="1080" decoding="async" fetchPriority="high" />
@@ -60,7 +78,7 @@ export default function CategoryPage({
           </>
         ) : null}
         <div className="container page-banner-inner">
-          <nav className={`crumbs${bannerImage && !yellow ? ' crumbs--on-dark' : ''}`} aria-label="Breadcrumb">
+          <nav className={`crumbs${bannerImage && !bannerYellow ? ' crumbs--on-dark' : ''}`} aria-label="Breadcrumb">
             {crumbs.map((c, i) => (
               <span key={`${c.label}-${i}`} style={{ display: 'contents' }}>
                 {i > 0 ? <span aria-hidden="true">/</span> : null}
@@ -81,10 +99,10 @@ export default function CategoryPage({
       </section>
 
       {(image || subcategory?.description || category?.description) && (
-        <section className={`range-intro${yellow ? ' range-intro--yellow' : ''}`} aria-labelledby="about-title">
+        <section className={`range-intro${introYellow ? ' range-intro--yellow' : ''}`} aria-labelledby="about-title">
           <div className="container range-intro-layout">
             <div className="range-copy reveal">
-              <p className="section-eyebrow">{subcategory ? `${subcategory.name} Series` : 'Our Range'}</p>
+              <p className="section-eyebrow">{aboutEyebrow}</p>
               <h2 id="about-title" className="section-title">
                 {aboutTitle}
               </h2>
@@ -93,7 +111,7 @@ export default function CategoryPage({
               )}
             </div>
             {image ? (
-              <figure className={`range-figure${!yellow ? ' range-figure--light' : ''} reveal`}>
+              <figure className={`range-figure${!introYellow ? ' range-figure--light' : ''} reveal`}>
                 <img src={image} alt="" width="800" height="800" loading="lazy" decoding="async" />
               </figure>
             ) : null}
@@ -103,16 +121,17 @@ export default function CategoryPage({
 
       {useGroupedHooks ? (
         <section
-          className={`range-section${yellow ? ' range-section--yellow' : ''}`}
+          className={`range-section${productsYellow ? ' range-section--yellow' : ''}`}
           id="product-range"
           aria-labelledby="range-title"
         >
           <div className="container">
             <header className="range-head reveal">
-              <p className="section-eyebrow">Product Styles</p>
+              <p className="section-eyebrow">{productsEyebrow}</p>
               <h2 id="range-title" className="section-title">
-                Designed for every technique
+                {productsHeading}
               </h2>
+              {productsLead ? <p>{productsLead}</p> : null}
             </header>
             <div className="hook-groups">
               {Object.entries(verticalByGroup).map(([group, list]) => (
@@ -133,7 +152,7 @@ export default function CategoryPage({
             </div>
             {horizontal.length > 0 ? (
               <div style={{ marginTop: '2rem' }}>
-                <ProductCatalog products={horizontal} showSearch={false} yellow={yellow} />
+                <ProductCatalog products={horizontal} showSearch={false} yellow={productsYellow} />
               </div>
             ) : null}
           </div>
@@ -142,12 +161,13 @@ export default function CategoryPage({
         <ProductCatalog
           products={products}
           showSearch={false}
-          yellow={yellow}
-          eyebrow={yellow ? 'Product Styles' : null}
-          title={yellow ? 'Designed for every technique' : null}
+          yellow={productsYellow}
+          eyebrow={productsEyebrow}
+          title={productsHeading}
+          lead={productsLead}
         />
       ) : (
-        <section className="range-section">
+        <section className={`range-section${productsYellow ? ' range-section--yellow' : ''}`}>
           <div className="container">
             <p>Products coming soon. <a href="/contact">Contact us</a> for availability.</p>
           </div>

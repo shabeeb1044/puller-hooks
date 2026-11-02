@@ -19,38 +19,56 @@ model AdminUser {
 }
 
 model Category {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
-  description String?
-  image       String?
-  bannerImage String?
-  visible     Boolean       @default(true)
-  sortOrder   Int           @default(0)
-  pageTitle   String?
-  pageLead    String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  subcategories Subcategory[]
-  products    Product[]
+  id               String        @id @default(cuid())
+  name             String
+  slug             String        @unique
+  description      String?
+  image            String?
+  bannerImage      String?
+  visible          Boolean       @default(true)
+  sortOrder        Int           @default(0)
+  menuLinkType     String        @default("page") // page | product | custom (legacy: section = custom)
+  menuAnchor       String?       // Custom URL, path, or home section id when menuLinkType = custom
+  menuProductId    String?       // Existing product when menuLinkType = product
+  menuProduct      Product?      @relation("CategoryMenuProduct", fields: [menuProductId], references: [id], onDelete: SetNull)
+  pageSubtitle     String?       // Section 01 eyebrow
+  pageTitle        String?       // Section 01 heading
+  pageLead         String?       // Section 01 description
+  introSubtitle    String?       // Section 02 eyebrow
+  introTitle       String?       // Section 02 heading
+  productsSubtitle String?       // Products section eyebrow
+  productsTitle    String?       // Products section heading
+  productsLead     String?       // Products section description
+  bannerTheme      String        @default("black") // yellow | black — Section 01
+  introTheme       String        @default("black") // yellow | black — Section 02
+  productsTheme    String        @default("black") // yellow | black — Section 03
+  pageTheme        String        @default("black") // legacy; prefer per-section themes
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  subcategories    Subcategory[]
+  products         Product[]
 }
 
 model Subcategory {
-  id          String    @id @default(cuid())
-  name        String
-  slug        String
-  description String?
-  image       String?
-  bannerImage String?
-  visible     Boolean   @default(true)
-  sortOrder   Int       @default(0)
-  pageTitle   String?
-  pageLead    String?
-  categoryId  String
-  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  name          String
+  slug          String
+  description   String?
+  image         String?
+  bannerImage   String?
+  visible       Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  menuLinkType  String    @default("page") // page | product | custom
+  menuAnchor    String?   // Custom URL / path / section id
+  menuProductId String?
+  menuProduct   Product?  @relation("SubcategoryMenuProduct", fields: [menuProductId], references: [id], onDelete: SetNull)
+  pageTitle     String?
+  pageLead      String?
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products      Product[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@unique([categoryId, slug])
 }
@@ -75,6 +93,8 @@ model Product {
   category      Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   subcategoryId String?
   subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  menuCategories    Category[]    @relation("CategoryMenuProduct")
+  menuSubcategories Subcategory[] @relation("SubcategoryMenuProduct")
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -91,6 +111,8 @@ model DealerInquiry {
   businessType String?
   country      String?
   phone        String?
+  address      String?
+  postalCode   String?
   city         String?
   website      String?
   interest     String?
