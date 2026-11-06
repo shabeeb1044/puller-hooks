@@ -16,8 +16,18 @@ const schema = z.object({
   menuLinkType: z.enum(['page', 'product', 'custom', 'section']).optional(),
   menuAnchor: z.string().optional().nullable(),
   menuProductId: z.string().optional().nullable(),
+  pageSubtitle: z.string().optional().nullable(),
   pageTitle: z.string().optional().nullable(),
   pageLead: z.string().optional().nullable(),
+  modelsSubtitle: z.string().optional().nullable(),
+  modelsTitle: z.string().optional().nullable(),
+  modelsLead: z.string().optional().nullable(),
+  productsSubtitle: z.string().optional().nullable(),
+  productsTitle: z.string().optional().nullable(),
+  productsLead: z.string().optional().nullable(),
+  bannerTheme: z.enum(['yellow', 'black']).optional(),
+  modelsTheme: z.enum(['yellow', 'black']).optional(),
+  productsTheme: z.enum(['yellow', 'black']).optional(),
 });
 
 export async function GET(_request, { params }) {
@@ -41,20 +51,37 @@ export async function PUT(request, { params }) {
     const data = parsed.data;
 
     try {
+      const links = menuLinkPayload(data);
+      const { menuProductId, ...linkFields } = links;
+      // Use relation connect/disconnect (checked input). Mixing categoryId scalar
+      // with relation-style fields trips Prisma XOR validation and 500s with an empty body.
       const subcategory = await prisma.subcategory.update({
         where: { id },
         data: {
           name: data.name,
           slug: slugify(data.slug || data.name),
-          categoryId: data.categoryId,
-          description: data.description || null,
+          category: { connect: { id: data.categoryId } },
+          description: data.description || data.modelsLead || null,
           image: data.image || null,
           bannerImage: data.bannerImage || null,
           visible: data.visible,
           sortOrder: data.sortOrder,
-          ...menuLinkPayload(data),
+          ...linkFields,
+          menuProduct: menuProductId
+            ? { connect: { id: menuProductId } }
+            : { disconnect: true },
+          pageSubtitle: data.pageSubtitle || null,
           pageTitle: data.pageTitle || null,
           pageLead: data.pageLead || null,
+          modelsSubtitle: data.modelsSubtitle || null,
+          modelsTitle: data.modelsTitle || null,
+          modelsLead: data.modelsLead || data.description || null,
+          productsSubtitle: data.productsSubtitle || null,
+          productsTitle: data.productsTitle || null,
+          productsLead: data.productsLead || null,
+          bannerTheme: data.bannerTheme || 'black',
+          modelsTheme: data.modelsTheme || 'black',
+          productsTheme: data.productsTheme || 'black',
         },
         include: { category: true },
       });
@@ -62,7 +89,8 @@ export async function PUT(request, { params }) {
     } catch (e) {
       if (e.code === 'P2025') return jsonError('Subcategory not found.', 404);
       if (e.code === 'P2002') return jsonError('A subcategory with this slug already exists in the category.', 409);
-      throw e;
+      console.error('[admin/subcategories PUT]', e);
+      return jsonError(e.message || 'Failed to update subcategory.', 500);
     }
   });
 }

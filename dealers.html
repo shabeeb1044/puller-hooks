@@ -188,7 +188,7 @@
                 <input id="df-name" name="name" type="text" autocomplete="name" required />
               </div>
               <div class="dealer-field field">
-                <label for="df-company">Business name <span class="req" aria-hidden="true">*</span></label>
+                <label for="df-company">Company name <span class="req" aria-hidden="true">*</span></label>
                 <input id="df-company" name="company" type="text" autocomplete="organization" required />
               </div>
               <div class="dealer-field field">
@@ -221,13 +221,29 @@
                   <div class="phone-input" data-name="phone" data-input-id="df-phone" data-required></div>
                 </div>
               </div>
+              <div class="field-row field-row--phone field-row--whatsapp">
+                <div class="dealer-field field field--country">
+                  <label for="df-whatsapp-country">WhatsApp dial code <span class="field-optional">(optional)</span></label>
+                  <div
+                    class="country-select"
+                    data-name="whatsapp_country"
+                    data-input-id="df-whatsapp-country"
+                    data-placeholder="Select dial code"
+                    data-phone-target="df-whatsapp"
+                  ></div>
+                </div>
+                <div class="dealer-field field field--phone">
+                  <label for="df-whatsapp">WhatsApp number <span class="field-optional">(optional)</span></label>
+                  <div class="phone-input" data-name="whatsapp" data-input-id="df-whatsapp" data-placeholder="WhatsApp number" data-independent></div>
+                </div>
+              </div>
               <div class="dealer-field field field--full">
                 <label for="df-address">Physical Store Address <span class="field-optional">(will be verified)</span></label>
                 <input id="df-address" name="address" type="text" autocomplete="street-address" required />
               </div>
               <div class="dealer-field field">
-                <label for="df-postal">Zip / Postal Code <span class="req" aria-hidden="true">*</span></label>
-                <input id="df-postal" name="postal_code" type="text" autocomplete="postal-code" required />
+                <label for="df-postal">Zip / Postal Code <span class="field-optional">(optional)</span></label>
+                <input id="df-postal" name="postal_code" type="text" autocomplete="postal-code" />
               </div>
               <div class="dealer-field field">
                 <label for="df-city">City / region <span class="req" aria-hidden="true">*</span></label>
@@ -291,7 +307,7 @@
           </details>
           <details class="contact-faq-item reveal">
             <summary>Can I get samples or a colour chart?</summary>
-            <p>Yes. Qualified applicants can request catalogues, FLASH STRIKER colour references, and sample options. Mention what you need in the form or email sales.</p>
+            <p>Yes. Qualified applicants can request catalogues, FLASH STRIKER hard-body lures, metal lures and jigs colour references, and sample options. Mention what you need in the form or email sales.</p>
           </details>
         </div>
       </div>

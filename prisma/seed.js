@@ -1,25 +1,11 @@
 /* eslint-disable no-console */
 const { PrismaClient } = require('@prisma/client');
-const { PrismaLibSQL } = require('@prisma/adapter-libsql');
-const { createClient } = require('@libsql/client');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
-function createPrisma() {
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
-  if (url && authToken) {
-    console.log('Seeding Turso database…');
-    return new PrismaClient({
-      adapter: new PrismaLibSQL(createClient({ url, authToken })),
-    });
-  }
-  console.log('Seeding local SQLite (DATABASE_URL)…');
-  return new PrismaClient();
-}
-
-const prisma = createPrisma();
+console.log('Seeding MySQL (DATABASE_URL)…');
+const prisma = new PrismaClient();
 
 function loadCatalog() {
   const catalogPath = path.join(__dirname, '..', 'lib', 'catalog.json');
@@ -75,13 +61,24 @@ async function seedCategories() {
           name: 'FLASH STRIKER',
           slug: 'flash-striker',
           description:
-            'The PULLER FLASH STRIKER is a renowned series of hard-body trolling and casting lures, available in more than 100 different colour patterns.',
+            'Choose the FLASH STRIKER size that matches your water, target species and technique. FLASH STRIKER is available now in 38 colour patterns.',
           image: '/images/product-hard-body-lures-black-bg.webp',
           visible: true,
           sortOrder: 0,
+          pageSubtitle: 'PULLER Lures',
           pageTitle: 'Strong, Reliable, Built to Perform',
           pageLead:
             'PULLER Lures are engineered to deliver reliable, high-performance results in both saltwater and freshwater.',
+          modelsSubtitle: 'Available Models',
+          modelsTitle: 'Seven sizes. One series.',
+          modelsLead:
+            'Choose the FLASH STRIKER size that matches your water, target species and technique. FLASH STRIKER is available now in 38 colour patterns.',
+          productsSubtitle: 'Colour Patterns',
+          productsTitle: 'FLASH STRIKER 160 DD',
+          productsLead: '38 colour patterns · 2m+ dive depth. Available now.',
+          bannerTheme: 'yellow',
+          modelsTheme: 'yellow',
+          productsTheme: 'yellow',
         },
       ],
     },
@@ -206,11 +203,25 @@ async function seedCategories() {
           image: sub.image || null,
           visible: sub.visible ?? true,
           sortOrder: sub.sortOrder ?? 0,
+          pageSubtitle: sub.pageSubtitle || null,
           pageTitle: sub.pageTitle || null,
           pageLead: sub.pageLead || null,
+          modelsSubtitle: sub.modelsSubtitle || null,
+          modelsTitle: sub.modelsTitle || null,
+          modelsLead: sub.modelsLead || sub.description || null,
+          productsSubtitle: sub.productsSubtitle || null,
+          productsTitle: sub.productsTitle || null,
+          productsLead: sub.productsLead || null,
+          bannerTheme: sub.bannerTheme || 'black',
+          modelsTheme: sub.modelsTheme || 'black',
+          productsTheme: sub.productsTheme || 'black',
         },
         create: {
           ...sub,
+          modelsLead: sub.modelsLead || sub.description || null,
+          bannerTheme: sub.bannerTheme || 'black',
+          modelsTheme: sub.modelsTheme || 'black',
+          productsTheme: sub.productsTheme || 'black',
           categoryId: category.id,
         },
       });
@@ -248,6 +259,7 @@ async function seedFlashStrikerProducts(tree) {
         image: `/images/products/flash-striker-160-dd-${id}.webp`,
         imageAlt: `FLASH STRIKER, 2m +`,
         imageHeight: height,
+        imageStyle: 'vertical',
         status: 'published',
         layout: 'horizontal',
         sortOrder: sortOrder++,
@@ -262,66 +274,105 @@ async function seedFlashStrikerProducts(tree) {
   console.log(`Seeded ${catalog.order.length} Flash Striker colourways.`);
 }
 
-async function seedHookProducts(tree) {
-  const hooks = [
-    { name: 'Round Bend Flat Hook', sub: 'round-bend', slug: 'round-bend-flat-hook' },
-    { name: 'Round Bend Ringed Hook', sub: 'round-bend', slug: 'round-bend-ringed-hook' },
-    { name: 'Round Bend Flat Matt Hook', sub: 'round-bend', slug: 'round-bend-flat-matt-hook' },
-    { name: 'Round Bend Ringed Matt Hook', sub: 'round-bend', slug: 'round-bend-ringed-matt-hook' },
-    { name: 'In-Line Single Hook', sub: 'bait-specialty', slug: 'in-line-single-hook' },
-    { name: 'Beak Bait Hook', sub: 'bait-specialty', slug: 'beak-bait-hook' },
-    { name: 'Octopus Hook', sub: 'bait-specialty', slug: 'octopus-hook' },
-    { name: 'Limerick Bend Ringed Black Hook', sub: 'limerick-bend', slug: 'limerick-bend-ringed-black-hook' },
-    { name: 'Limerick Bend Ringed Golden Hook', sub: 'limerick-bend', slug: 'limerick-bend-ringed-golden-hook' },
-    { name: 'Limerick Bend Flat Black Hook', sub: 'limerick-bend', slug: 'limerick-bend-flat-black-hook' },
-    { name: 'Kirby Bend Ringed Bronze Hook', sub: 'kirby-bend', slug: 'kirby-bend-ringed-bronze-hook' },
-    { name: 'Kirby Bend Flat Hook', sub: 'kirby-bend', slug: 'kirby-bend-flat-hook' },
-    { name: 'Kirby Bend Ringed Hook', sub: 'kirby-bend', slug: 'kirby-bend-ringed-hook' },
-    { name: 'Kirby Bend Flat Blue Hook', sub: 'kirby-bend', slug: 'kirby-bend-flat-blue-hook' },
+async function seedDealerDirectory() {
+  const regions = [
+    {
+      name: 'Europe',
+      slug: 'europe',
+      sortOrder: 0,
+      dealers: [
+        {
+          name: 'Golden Catch',
+          country: 'Ukraine',
+          address: 'Dmitrievskaya Street, 59, Odessa, Ukraine',
+          sortOrder: 0,
+        },
+        {
+          name: 'Kiddy Wholesale Ltd',
+          country: 'United Kingdom',
+          address: '9 Barton Road, St Marys Buildings, Torquay, Devon, TQ1 4DP, United Kingdom',
+          sortOrder: 1,
+        },
+        {
+          name: 'Pesca Norte',
+          country: 'Portugal',
+          address: 'Rua do Comércio 12, Porto, Portugal',
+          sortOrder: 2,
+        },
+        {
+          name: 'Alpine Tackle',
+          country: 'Austria',
+          address: 'Fischergasse 8, Salzburg, Austria',
+          sortOrder: 3,
+        },
+      ],
+    },
+    {
+      name: 'Asia',
+      slug: 'asia',
+      sortOrder: 1,
+      dealers: [],
+    },
+    {
+      name: 'Americas',
+      slug: 'americas',
+      sortOrder: 2,
+      dealers: [],
+    },
   ];
 
-  const category = tree.hooks.category;
-  let sortOrder = 0;
-  for (const hook of hooks) {
-    const subcategory = tree.hooks.subs[hook.sub];
-    await prisma.product.upsert({
-      where: {
-        categoryId_slug: { categoryId: category.id, slug: hook.slug },
-      },
+  for (const region of regions) {
+    const saved = await prisma.dealerRegion.upsert({
+      where: { slug: region.slug },
       update: {
-        name: hook.name,
-        status: 'published',
-        layout: 'vertical',
-        subcategoryId: subcategory.id,
-        sortOrder: sortOrder++,
-        ctaHref: '/contact',
-        ctaLabel: 'Inquire',
+        name: region.name,
+        sortOrder: region.sortOrder,
+        visible: true,
       },
       create: {
-        name: hook.name,
-        slug: hook.slug,
-        description: 'High-strength fishing hook for saltwater and freshwater.',
-        status: 'published',
-        layout: 'vertical',
-        sortOrder: sortOrder++,
-        image: '/images/product-hooks.webp',
-        imageAlt: hook.name,
-        ctaHref: '/contact',
-        ctaLabel: 'Inquire',
-        searchTerms: hook.name.toLowerCase(),
-        categoryId: category.id,
-        subcategoryId: subcategory.id,
+        name: region.name,
+        slug: region.slug,
+        sortOrder: region.sortOrder,
+        visible: true,
       },
     });
+
+    for (const dealer of region.dealers) {
+      const existing = await prisma.dealerLocation.findFirst({
+        where: { regionId: saved.id, name: dealer.name },
+      });
+      if (existing) {
+        await prisma.dealerLocation.update({
+          where: { id: existing.id },
+          data: {
+            address: dealer.address,
+            country: dealer.country,
+            sortOrder: dealer.sortOrder,
+            visible: true,
+          },
+        });
+      } else {
+        await prisma.dealerLocation.create({
+          data: {
+            name: dealer.name,
+            address: dealer.address,
+            country: dealer.country,
+            sortOrder: dealer.sortOrder,
+            visible: true,
+            regionId: saved.id,
+          },
+        });
+      }
+    }
   }
-  console.log(`Seeded ${hooks.length} hook products.`);
+  console.log(`Seeded ${regions.length} dealer regions.`);
 }
 
 async function main() {
   await ensureAdmin();
   const tree = await seedCategories();
   await seedFlashStrikerProducts(tree);
-  await seedHookProducts(tree);
+  await seedDealerDirectory();
   console.log('Seed complete.');
 }
 

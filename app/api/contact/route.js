@@ -9,12 +9,17 @@ const schema = z.object({
   topic: z.string().max(200).optional().nullable(),
   country: z.string().max(100).optional().nullable(),
   phone: z.string().max(50).optional().nullable(),
+  whatsapp: z.string().max(50).optional().nullable(),
   message: z.string().min(1).max(5000),
 });
 
 export async function POST(request) {
   const body = await readJson(request);
-  const parsed = schema.safeParse(body);
+  const normalized = {
+    ...body,
+    whatsapp: body?.whatsapp || body?.whatsApp || null,
+  };
+  const parsed = schema.safeParse(normalized);
   if (!parsed.success) {
     return jsonError(parsed.error.issues[0]?.message || 'Invalid form data.', 400);
   }
@@ -27,6 +32,7 @@ export async function POST(request) {
       topic: parsed.data.topic?.trim() || null,
       country: parsed.data.country?.trim() || null,
       phone: parsed.data.phone?.trim() || null,
+      whatsapp: parsed.data.whatsapp?.trim() || null,
       message: parsed.data.message.trim(),
       status: 'new',
     },

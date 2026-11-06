@@ -14,6 +14,8 @@ export async function GET(request) {
         { email: { contains: q } },
         { company: { contains: q } },
         { topic: { contains: q } },
+        { phone: { contains: q } },
+        { whatsapp: { contains: q } },
         { message: { contains: q } },
       ];
     }

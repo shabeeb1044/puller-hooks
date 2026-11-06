@@ -82,7 +82,24 @@ export default function AdminProductsPage() {
           <h1>Products</h1>
           <p>Create, edit, publish, and reorder products. Drag rows to change display order.</p>
         </div>
-        <Link className="admin-btn" href="/admin/products/new">Add product</Link>
+        <div className="admin-actions" style={{ margin: 0 }}>
+          <Link
+            className="admin-btn admin-btn-ghost"
+            href={
+              categoryId
+                ? `/admin/products/new?categoryId=${categoryId}&layout=vertical`
+                : '/admin/products/new?layout=vertical'
+            }
+          >
+            Add name button
+          </Link>
+          <Link
+            className="admin-btn"
+            href={categoryId ? `/admin/products/new?categoryId=${categoryId}` : '/admin/products/new'}
+          >
+            Add product
+          </Link>
+        </div>
       </div>
 
       {error ? <div className="admin-error">{error}</div> : null}
@@ -151,7 +168,13 @@ export default function AdminProductsPage() {
                   {item.subcategory ? ` / ${item.subcategory.name}` : ''}
                 </td>
                 <td><StatusBadge status={item.status} /></td>
-                <td>{item.layout}</td>
+                <td>
+                  {item.layout === 'vertical' || !item.image
+                    ? 'Name button'
+                    : item.imageStyle === 'vertical'
+                      ? 'Image · Vertical'
+                      : 'Image · Contain'}
+                </td>
                 <td>
                   <div className="admin-actions">
                     <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/products/${item.id}`}>Edit</Link>

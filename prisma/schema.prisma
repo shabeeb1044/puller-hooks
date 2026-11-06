@@ -1,10 +1,9 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -22,23 +21,23 @@ model Category {
   id               String        @id @default(cuid())
   name             String
   slug             String        @unique
-  description      String?
-  image            String?
-  bannerImage      String?
+  description      String?       @db.Text
+  image            String?       @db.Text
+  bannerImage      String?       @db.Text
   visible          Boolean       @default(true)
   sortOrder        Int           @default(0)
   menuLinkType     String        @default("page") // page | product | custom (legacy: section = custom)
-  menuAnchor       String?       // Custom URL, path, or home section id when menuLinkType = custom
+  menuAnchor       String?       @db.Text // Custom URL, path, or home section id when menuLinkType = custom
   menuProductId    String?       // Existing product when menuLinkType = product
   menuProduct      Product?      @relation("CategoryMenuProduct", fields: [menuProductId], references: [id], onDelete: SetNull)
   pageSubtitle     String?       // Section 01 eyebrow
   pageTitle        String?       // Section 01 heading
-  pageLead         String?       // Section 01 description
+  pageLead         String?       @db.Text // Section 01 description
   introSubtitle    String?       // Section 02 eyebrow
   introTitle       String?       // Section 02 heading
   productsSubtitle String?       // Products section eyebrow
   productsTitle    String?       // Products section heading
-  productsLead     String?       // Products section description
+  productsLead     String?       @db.Text // Products section description
   bannerTheme      String        @default("black") // yellow | black — Section 01
   introTheme       String        @default("black") // yellow | black — Section 02
   productsTheme    String        @default("black") // yellow | black — Section 03
@@ -50,25 +49,35 @@ model Category {
 }
 
 model Subcategory {
-  id            String    @id @default(cuid())
-  name          String
-  slug          String
-  description   String?
-  image         String?
-  bannerImage   String?
-  visible       Boolean   @default(true)
-  sortOrder     Int       @default(0)
-  menuLinkType  String    @default("page") // page | product | custom
-  menuAnchor    String?   // Custom URL / path / section id
-  menuProductId String?
-  menuProduct   Product?  @relation("SubcategoryMenuProduct", fields: [menuProductId], references: [id], onDelete: SetNull)
-  pageTitle     String?
-  pageLead      String?
-  categoryId    String
-  category      Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  products      Product[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  name             String
+  slug             String
+  description      String?   @db.Text // legacy; prefer modelsLead
+  image            String?   @db.Text // not used on subcategory page layout
+  bannerImage      String?   @db.Text
+  visible          Boolean   @default(true)
+  sortOrder        Int       @default(0)
+  menuLinkType     String    @default("page") // page | product | custom
+  menuAnchor       String?   @db.Text // Custom URL / path / section id
+  menuProductId    String?
+  menuProduct      Product?  @relation("SubcategoryMenuProduct", fields: [menuProductId], references: [id], onDelete: SetNull)
+  pageSubtitle     String?   // Section 01 eyebrow
+  pageTitle        String?   // Section 01 heading
+  pageLead         String?   @db.Text // Section 01 description
+  modelsSubtitle   String?   // Section 02 Available Models eyebrow
+  modelsTitle      String?   // Section 02 heading
+  modelsLead       String?   @db.Text // Section 02 description
+  productsSubtitle String?   // Section 03 Products eyebrow
+  productsTitle    String?   // Section 03 heading
+  productsLead     String?   @db.Text // Section 03 description
+  bannerTheme      String    @default("black") // yellow | black — Section 01
+  modelsTheme      String    @default("black") // yellow | black — Section 02
+  productsTheme    String    @default("black") // yellow | black — Section 03
+  categoryId       String
+  category         Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products         Product[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@unique([categoryId, slug])
 }
@@ -77,18 +86,19 @@ model Product {
   id            String       @id @default(cuid())
   name          String
   slug          String
-  description   String?
-  specifications String?     // JSON string array or text
-  features      String?      // JSON string array or text
-  image         String?
-  imageAlt      String?
-  imageHeight   Int?
-  status        String       @default("draft") // published | draft
-  layout        String       @default("horizontal") // horizontal | vertical
-  sortOrder     Int          @default(0)
-  ctaLabel      String?      @default("Inquiry now")
-  ctaHref       String?      @default("/dealers#apply")
-  searchTerms   String?
+  description    String?      @db.Text
+  specifications String?      @db.Text // JSON string array or text
+  features       String?      @db.Text // JSON string array or text
+  image          String?      @db.Text
+  imageAlt       String?
+  imageHeight    Int?
+  imageStyle     String       @default("contain") // contain | vertical — how image cards display
+  status         String       @default("draft") // published | draft
+  layout         String       @default("horizontal") // horizontal | vertical
+  sortOrder      Int          @default(0)
+  ctaLabel       String?      @default("Inquiry now")
+  ctaHref        String?      @default("/dealers#apply") @db.Text
+  searchTerms    String?      @db.Text
   categoryId    String
   category      Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   subcategoryId String?
@@ -111,12 +121,13 @@ model DealerInquiry {
   businessType String?
   country      String?
   phone        String?
-  address      String?
+  whatsapp     String?
+  address      String?  @db.Text
   postalCode   String?
   city         String?
-  website      String?
-  interest     String?
-  message      String?
+  website      String?  @db.Text
+  interest     String?  @db.Text
+  message      String?  @db.Text
   status       String   @default("new") // new | in_progress | completed
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -134,7 +145,8 @@ model ContactInquiry {
   topic     String?
   country   String?
   phone     String?
-  message   String
+  whatsapp  String?
+  message   String   @db.Text
   status    String   @default("new") // new | in_progress | completed
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,6 +159,36 @@ model ContactInquiry {
 model Setting {
   id        String   @id @default(cuid())
   key       String   @unique
-  value     String
+  value     String   @db.Text
   updatedAt DateTime @updatedAt
+}
+
+/// Continent / area used by the public dealer directory region select.
+model DealerRegion {
+  id        String          @id @default(cuid())
+  name      String
+  slug      String          @unique
+  sortOrder Int             @default(0)
+  visible   Boolean         @default(true)
+  dealers   DealerLocation[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([visible, sortOrder])
+}
+
+/// Authorized dealer listing shown on /dealers (name + address).
+model DealerLocation {
+  id        String       @id @default(cuid())
+  name      String
+  address   String       @db.Text
+  country   String?
+  sortOrder Int          @default(0)
+  visible   Boolean      @default(true)
+  regionId  String
+  region    DealerRegion @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([regionId, visible, sortOrder])
 }

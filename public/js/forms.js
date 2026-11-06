@@ -98,14 +98,22 @@
 
   function validatePhone(root) {
     var api = root && root._phoneInput;
+    var required = !!(root && root.hasAttribute('data-required'));
     if (!api) {
-      setFieldError(root, 'Phone number is required.');
-      return false;
+      if (required) {
+        setFieldError(root, 'Phone number is required.');
+        return false;
+      }
+      return true;
     }
     var value = api.getValue();
     if (!value) {
-      setFieldError(root, 'Phone number is required.');
-      return false;
+      if (required) {
+        setFieldError(root, 'Phone number is required.');
+        return false;
+      }
+      setFieldError(root, '');
+      return true;
     }
     var ok = api.validate();
     if (!ok) {
@@ -115,6 +123,14 @@
     }
     setFieldError(root, '');
     return true;
+  }
+
+  function validatePhoneFields(form) {
+    var ok = true;
+    form.querySelectorAll('.phone-input').forEach(function (root) {
+      if (!validatePhone(root)) ok = false;
+    });
+    return ok;
   }
 
   function validateEmail(input) {
@@ -155,14 +171,13 @@
     var email = form.querySelector('[name="email"]');
     var company = form.querySelector('[name="company"]');
     var message = form.querySelector('[name="message"]');
-    var country = form.querySelector('.country-select');
-    var phone = form.querySelector('.phone-input');
+    var country = form.querySelector('.country-select[data-name="country"]');
 
     if (name && !validateRequiredText(name, 'Name')) ok = false;
     if (email && !validateEmail(email)) ok = false;
     if (company && !validateRequiredText(company, 'Company name')) ok = false;
     if (country && !validateCountry(country)) ok = false;
-    if (phone && !validatePhone(phone)) ok = false;
+    if (!validatePhoneFields(form)) ok = false;
     if (message && !validateRequiredText(message, 'Message')) ok = false;
 
     return ok;
@@ -178,18 +193,17 @@
     var address = form.querySelector('[name="address"]');
     var postal = form.querySelector('[name="postal_code"], [name="postalCode"]');
     var city = form.querySelector('[name="city"], [name="region"]');
-    var country = form.querySelector('.country-select');
-    var phone = form.querySelector('.phone-input');
+    var country = form.querySelector('.country-select[data-name="country"]');
     var message = form.querySelector('[name="message"]');
 
-    if (business && !validateRequiredText(business, 'Name')) ok = false;
+    if (business && !validateRequiredText(business, 'Company name')) ok = false;
     if (name && !validateRequiredText(name, 'Name')) ok = false;
     if (email && !validateEmail(email)) ok = false;
     if (country && !validateCountry(country)) ok = false;
     if (address && address.hasAttribute('required') && !validateRequiredText(address, 'Physical Store Address')) ok = false;
     if (postal && postal.hasAttribute('required') && !validateRequiredText(postal, 'Zip / Postal Code')) ok = false;
     if (city && !validateRequiredText(city, 'City / region')) ok = false;
-    if (phone && !validatePhone(phone)) ok = false;
+    if (!validatePhoneFields(form)) ok = false;
     if (message && message.hasAttribute('required') && !validateRequiredText(message, 'Message')) ok = false;
 
     return ok;
@@ -202,10 +216,17 @@
       data[key] = typeof value === 'string' ? value.trim() : value;
     });
     form.querySelectorAll('.country-select').forEach(function (root) {
-      if (root._countrySelect) data.country = root._countrySelect.getValue() || data.country || '';
+      if (!root._countrySelect) return;
+      var key = root.getAttribute('data-name') || 'country';
+      data[key] = root._countrySelect.getValue() || data[key] || '';
     });
     form.querySelectorAll('.phone-input').forEach(function (root) {
-      if (root._phoneInput) data.phone = root._phoneInput.getValue() || data.phone || '';
+      if (!root._phoneInput) return;
+      var key = root.getAttribute('data-name') || 'phone';
+      var value = root._phoneInput.getE164Candidate
+        ? root._phoneInput.getE164Candidate()
+        : root._phoneInput.getValue();
+      data[key] = value || data[key] || '';
     });
     return data;
   }

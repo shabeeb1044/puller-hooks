@@ -14,6 +14,7 @@ const productSchema = z.object({
   imageHeight: z.number().int().optional().nullable(),
   status: z.enum(['published', 'draft']),
   layout: z.enum(['horizontal', 'vertical']),
+  imageStyle: z.enum(['contain', 'vertical', 'normal']).optional().default('contain'),
   sortOrder: z.number().int().optional(),
   ctaLabel: z.string().optional().nullable(),
   ctaHref: z.string().optional().nullable(),
@@ -64,14 +65,23 @@ export async function PUT(request, { params }) {
           description: data.description || null,
           specifications: toJsonList(data.specifications),
           features: toJsonList(data.features),
-          image: data.image || null,
-          imageAlt: data.imageAlt || null,
-          imageHeight: data.imageHeight ?? null,
+          image: data.layout === 'vertical' ? null : data.image || null,
+          imageAlt: data.layout === 'vertical' ? null : data.imageAlt || null,
+          imageHeight: data.layout === 'vertical' ? null : data.imageHeight ?? null,
           status: data.status,
           layout: data.layout,
+          imageStyle:
+            data.layout === 'vertical'
+              ? 'contain'
+              : data.imageStyle === 'vertical'
+                ? 'vertical'
+                : 'contain',
           sortOrder: data.sortOrder,
           ctaLabel: data.ctaLabel || 'Inquiry now',
-          ctaHref: data.ctaHref || '/dealers#apply',
+          ctaHref:
+            data.layout === 'vertical'
+              ? (data.ctaHref && String(data.ctaHref).trim()) || '#'
+              : data.ctaHref || '/dealers#apply',
           searchTerms: data.searchTerms || null,
           categoryId: data.categoryId,
           subcategoryId: data.subcategoryId || null,

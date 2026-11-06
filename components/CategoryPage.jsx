@@ -1,26 +1,52 @@
 import ProductCatalog from '@/components/ProductCatalog';
 import { parseJsonList } from '@/lib/cms';
 
+function modelSizeLabel(product) {
+  const match = String(product.name || '').match(/(\d+)\s*DD/i);
+  if (match) return `${match[1]} DD`;
+  const specs = parseJsonList(product.specifications);
+  const fromSpec = specs.find((s) => /\d+\s*DD/i.test(s));
+  if (fromSpec) {
+    const m = fromSpec.match(/(\d+)\s*DD/i);
+    if (m) return `${m[1]} DD`;
+  }
+  return null;
+}
+
+function isFeaturedModel(product) {
+  const href = product.ctaHref || '';
+  return href.startsWith('#') || /featured|colour|color/i.test(product.ctaLabel || '');
+}
+
 export default function CategoryPage({
   category,
   subcategory = null,
   products = [],
   bannerVariant = 'default',
 }) {
+  const isSubcategoryPage = Boolean(subcategory);
+
   const title = subcategory?.pageTitle || category?.pageTitle || subcategory?.name || category?.name;
-  const lead = subcategory?.pageLead || category?.pageLead || subcategory?.description || category?.description || '';
-  const image = subcategory?.image || category?.image;
+  const lead = subcategory?.pageLead || category?.pageLead || (!isSubcategoryPage ? subcategory?.description || category?.description : '') || '';
   const bannerImage = subcategory?.bannerImage || category?.bannerImage;
-  const eyebrow = subcategory
-    ? `${category?.name || ''}`.trim()
+  const image = category?.image;
+
+  const eyebrow = isSubcategoryPage
+    ? subcategory?.pageSubtitle || category?.pageSubtitle || 'PULLER'
     : category?.pageSubtitle || 'PULLER Products';
-  const aboutEyebrow = subcategory
-    ? `${subcategory.name} Series`
-    : category?.introSubtitle || 'Our Range';
-  const aboutTitle = subcategory?.name || category?.introTitle || category?.name;
-  const productsEyebrow = category?.productsSubtitle || 'Product Styles';
-  const productsHeading = category?.productsTitle || 'Designed for every technique';
-  const productsLead = category?.productsLead || '';
+
+  const aboutEyebrow = category?.introSubtitle || 'Our Range';
+  const aboutTitle = category?.introTitle || category?.name;
+
+  const modelsEyebrow = subcategory?.modelsSubtitle || 'Available Models';
+  const modelsTitle = subcategory?.modelsTitle || (subcategory ? `${subcategory.name}` : 'Available Models');
+  const modelsLead = subcategory?.modelsLead || subcategory?.description || '';
+
+  const productsEyebrow =
+    subcategory?.productsSubtitle || category?.productsSubtitle || (isSubcategoryPage ? 'Products' : 'Product Styles');
+  const productsHeading =
+    subcategory?.productsTitle || category?.productsTitle || (isSubcategoryPage ? subcategory.name : 'Designed for every technique');
+  const productsLead = subcategory?.productsLead || category?.productsLead || '';
 
   const crumbs = [
     { href: '/', label: 'Home' },
@@ -40,31 +66,35 @@ export default function CategoryPage({
     category?.slug === 'hooks' ||
     subcategory?.slug === 'flash-striker';
 
-  const resolveTheme = (sectionTheme) => {
+  const resolveTheme = (sectionTheme, fallbackTheme) => {
     if (sectionTheme === 'yellow' || sectionTheme === 'black') return sectionTheme === 'yellow';
+    if (fallbackTheme === 'yellow' || fallbackTheme === 'black') return fallbackTheme === 'yellow';
     return legacyYellow;
   };
 
-  const bannerYellow = resolveTheme(category?.bannerTheme);
+  const bannerYellow = resolveTheme(subcategory?.bannerTheme, category?.bannerTheme);
   const introYellow = resolveTheme(category?.introTheme);
-  const productsYellow = resolveTheme(category?.productsTheme);
+  const modelsYellow = resolveTheme(subcategory?.modelsTheme, category?.productsTheme);
+  const productsYellow = resolveTheme(subcategory?.productsTheme, category?.productsTheme);
 
-  // Group vertical products by subcategory name when on a category page
+  // Name buttons: vertical layout, or any product without an image
+  const isNameButton = (p) => p.layout === 'vertical' || !p.image;
   const verticalByGroup = {};
   const flatVertical = [];
   for (const p of products) {
-    if (p.layout === 'vertical') {
+    if (isNameButton(p)) {
       const group = p.subcategory?.name || 'Products';
       if (!verticalByGroup[group]) verticalByGroup[group] = [];
       verticalByGroup[group].push(p);
       flatVertical.push(p);
     }
   }
-  const horizontal = products.filter((p) => p.layout !== 'vertical');
+  const horizontal = products.filter((p) => !isNameButton(p));
   const useGroupedHooks = !subcategory && flatVertical.length > 0 && Object.keys(verticalByGroup).length > 1;
 
   return (
     <main id="main">
+      {/* Section 01 — Banner */}
       <section
         className={`page-banner flash-striker-banner${bannerYellow ? ' page-banner--yellow' : ''}`}
         aria-labelledby="category-title"
@@ -98,7 +128,8 @@ export default function CategoryPage({
         </div>
       </section>
 
-      {(image || subcategory?.description || category?.description) && (
+      {/* Category pages keep intro (copy + image). Subcategory pages skip it. */}
+      {!isSubcategoryPage && (image || category?.description) ? (
         <section className={`range-intro${introYellow ? ' range-intro--yellow' : ''}`} aria-labelledby="about-title">
           <div className="container range-intro-layout">
             <div className="range-copy reveal">
@@ -106,9 +137,7 @@ export default function CategoryPage({
               <h2 id="about-title" className="section-title">
                 {aboutTitle}
               </h2>
-              {(subcategory?.description || category?.description) && (
-                <p className="range-lead">{subcategory?.description || category?.description}</p>
-              )}
+              {category?.description ? <p className="range-lead">{category.description}</p> : null}
             </div>
             {image ? (
               <figure className={`range-figure${!introYellow ? ' range-figure--light' : ''} reveal`}>
@@ -117,8 +146,51 @@ export default function CategoryPage({
             ) : null}
           </div>
         </section>
-      )}
+      ) : null}
 
+      {/* Section 02 — Available Models (subcategory only; text options, no images) */}
+      {isSubcategoryPage && flatVertical.length > 0 ? (
+        <section
+          className={`range-section${modelsYellow ? ' range-section--yellow' : ''}`}
+          id="models"
+          aria-labelledby="models-title"
+        >
+          <div className="container">
+            <header className="range-head reveal">
+              <p className="section-eyebrow">{modelsEyebrow}</p>
+              <h2 id="models-title" className="section-title">
+                {modelsTitle}
+              </h2>
+              {modelsLead ? <p>{modelsLead}</p> : null}
+            </header>
+            <div className="model-grid">
+              {flatVertical.map((product) => {
+                const size = modelSizeLabel(product);
+                const featured = isFeaturedModel(product);
+                return (
+                  <a
+                    key={product.id}
+                    className={`model-card reveal${featured ? ' model-card--featured' : ''}`}
+                    href={product.ctaHref || '#'}
+                  >
+                    {size ? <span className="model-size">{size}</span> : null}
+                    <h3 className="model-name">{product.name}</h3>
+                    {product.description ? <p className="model-note">{product.description}</p> : null}
+                    <span className="model-cta">
+                      {product.ctaLabel || 'Inquire'}{' '}
+                      <svg aria-hidden="true">
+                        <use href="#i-circle-arrow" />
+                      </svg>
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Section 03 — Products */}
       {useGroupedHooks ? (
         <section
           className={`range-section${productsYellow ? ' range-section--yellow' : ''}`}
@@ -139,7 +211,7 @@ export default function CategoryPage({
                   <h3 className="hook-group-title">{group}</h3>
                   <div className="hook-grid">
                     {list.map((product) => (
-                      <a key={product.id} className="hook-item" href={product.ctaHref || '/contact'}>
+                      <a key={product.id} className="hook-item" href={product.ctaHref || '#'}>
                         <span>{product.name}</span>
                         <svg aria-hidden="true">
                           <use href="#i-arrow" />
@@ -157,6 +229,25 @@ export default function CategoryPage({
             ) : null}
           </div>
         </section>
+      ) : isSubcategoryPage ? (
+        horizontal.length > 0 ? (
+          <ProductCatalog
+            products={horizontal}
+            showSearch={false}
+            yellow={productsYellow}
+            eyebrow={productsEyebrow}
+            title={productsHeading}
+            lead={productsLead}
+          />
+        ) : flatVertical.length === 0 ? (
+          <section className={`range-section${productsYellow ? ' range-section--yellow' : ''}`}>
+            <div className="container">
+              <p>
+                Products coming soon. <a href="/contact">Contact us</a> for availability.
+              </p>
+            </div>
+          </section>
+        ) : null
       ) : products.length > 0 ? (
         <ProductCatalog
           products={products}
@@ -169,12 +260,13 @@ export default function CategoryPage({
       ) : (
         <section className={`range-section${productsYellow ? ' range-section--yellow' : ''}`}>
           <div className="container">
-            <p>Products coming soon. <a href="/contact">Contact us</a> for availability.</p>
+            <p>
+              Products coming soon. <a href="/contact">Contact us</a> for availability.
+            </p>
           </div>
         </section>
       )}
 
-      {/* Specs/features sample for first product with details when on subcategory with few items */}
       {subcategory && products[0] && (products[0].specifications || products[0].features) && products.length <= 3 ? (
         <section className="range-section">
           <div className="container">

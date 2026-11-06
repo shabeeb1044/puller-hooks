@@ -38,6 +38,7 @@
     var inputId = root.getAttribute('data-input-id') || (name + '-input-' + (++uid));
     var errorId = inputId + '-error';
     var required = root.hasAttribute('data-required');
+    var placeholder = root.getAttribute('data-placeholder') || 'Phone number';
     var countryCode = (root.getAttribute('data-country') || '').toUpperCase();
     var dialCode = root.getAttribute('data-dial') || '';
 
@@ -57,7 +58,7 @@
       class: 'phone-input__number',
       inputmode: 'tel',
       autocomplete: 'tel-national',
-      placeholder: 'Phone number',
+      placeholder: placeholder,
       'aria-required': required ? 'true' : 'false',
       'aria-describedby': errorId
     });
@@ -121,7 +122,9 @@
         return true;
       }
       if (!countryCode) {
-        setError('Select a country first.');
+        setError(root.hasAttribute('data-independent')
+          ? 'Select a WhatsApp dial code first.'
+          : 'Select a country first.');
         return false;
       }
       var full = dialCode ? (dialCode + value) : value;
@@ -138,14 +141,6 @@
     input.addEventListener('input', function () {
       if (root.classList.contains('has-error')) validate();
     });
-
-    var form = root.closest('form');
-    if (form) {
-      form.addEventListener('countrychange', function (e) {
-        if (!e.detail) return;
-        setCountry(e.detail);
-      });
-    }
 
     var api = {
       root: root,
@@ -183,13 +178,24 @@
   }
 
   function wireCountryToPhone(form) {
-    if (!form) return;
-    var countryRoot = form.querySelector('.country-select');
-    var phoneRoot = form.querySelector('.phone-input');
-    if (!countryRoot || !phoneRoot || !phoneRoot._phoneInput) return;
+    if (!form || form.dataset.phoneCountryWired === '1') return;
+    form.dataset.phoneCountryWired = '1';
 
-    countryRoot.addEventListener('countrychange', function (e) {
-      phoneRoot._phoneInput.setCountry(e.detail || {});
+    form.querySelectorAll('.country-select').forEach(function (countryRoot) {
+      countryRoot.addEventListener('countrychange', function (e) {
+        var detail = e.detail || {};
+        var targetId = countryRoot.getAttribute('data-phone-target');
+
+        if (targetId) {
+          var target = form.querySelector('.phone-input[data-input-id="' + targetId + '"]');
+          if (target && target._phoneInput) target._phoneInput.setCountry(detail);
+          return;
+        }
+
+        form.querySelectorAll('.phone-input:not([data-independent])').forEach(function (phoneRoot) {
+          if (phoneRoot._phoneInput) phoneRoot._phoneInput.setCountry(detail);
+        });
+      });
     });
   }
 

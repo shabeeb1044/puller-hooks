@@ -19,24 +19,46 @@ export const metadata = {
   },
 };
 
+const MODELS = [
+  { size: '40', href: '/contact' },
+  { size: '90', href: '/contact' },
+  { size: '120', href: '/contact' },
+  { size: '140', href: '/contact' },
+  { size: '160', href: '#catalog', featured: true },
+  { size: '190', href: '/contact' },
+  { size: '220', href: '/contact' },
+];
+
 export default async function FlashStrikerPage() {
   const { category, subcategory, products } = await getPublishedProductsForListing(
     'hard-body-lures',
     'flash-striker'
   );
 
+  const eyebrow = subcategory?.pageSubtitle || 'PULLER Lures';
   const title = subcategory?.pageTitle || 'Strong, Reliable, Built to Perform';
   const lead =
     subcategory?.pageLead ||
     category?.pageLead ||
     'PULLER Lures are engineered to deliver reliable, high-performance results in both saltwater and freshwater.';
-  const image = subcategory?.image || category?.image || '/images/product-hard-body-lures-black-bg.webp';
-  const about =
+
+  const modelsEyebrow = subcategory?.modelsSubtitle || 'Available Models';
+  const modelsTitle = subcategory?.modelsTitle || 'Seven sizes. One series.';
+  const colourCount = products.length || 38;
+  const modelsLead =
+    subcategory?.modelsLead ||
     subcategory?.description ||
-    'The PULLER FLASH STRIKER is a renowned series of hard-body trolling and casting lures, available in more than 100 different colour patterns.';
+    `Choose the FLASH STRIKER size that matches your water, target species and technique. FLASH STRIKER is available now in ${colourCount} colour patterns.`;
+
+  const productsEyebrow = subcategory?.productsSubtitle || 'Colour Patterns';
+  const productsHeading = subcategory?.productsTitle || 'FLASH STRIKER 160 DD';
+  const productsLead =
+    subcategory?.productsLead ||
+    `${colourCount} colour patterns · 2m+ dive depth. Available now.`;
 
   return (
     <main id="main">
+      {/* Section 01 — Banner */}
       <section className="page-banner flash-striker-banner page-banner--yellow" aria-labelledby="flash-striker-title">
         <div className="container page-banner-inner">
           <nav className="crumbs" aria-label="Breadcrumb">
@@ -48,79 +70,41 @@ export default async function FlashStrikerPage() {
             <span aria-hidden="true">/</span>
             <span aria-current="page">Flash Striker</span>
           </nav>
-          <p className="section-eyebrow">PULLER Lures</p>
+          <p className="section-eyebrow">{eyebrow}</p>
           <h1 id="flash-striker-title" className="section-title">
             {title}
           </h1>
-          <p className="page-banner-lead">{lead}</p>
+          {lead ? <p className="page-banner-lead">{lead}</p> : null}
         </div>
       </section>
 
-      <section className="range-intro range-intro--yellow" aria-labelledby="lures-about-title">
-        <div className="container range-intro-layout">
-          <div className="range-copy reveal">
-            <p className="section-eyebrow">FLASH STRIKER Series</p>
-            <h2 id="lures-about-title" className="section-title">
-              Hard-Body Trolling &amp; Casting Lures
-            </h2>
-            <p className="range-lead">
-              PULLER Lures are engineered to deliver <strong>reliable, high-performance results in both saltwater and freshwater</strong>.
-              Our range combines <strong>strength, durability, quality, and effective lure action</strong>, providing anglers with
-              dependable performance across a wide variety of fishing conditions.
-            </p>
-            <p>{about}</p>
-            <p>Whether trolling offshore or casting in freshwater, FLASH STRIKER lures are built to perform when it matters most.</p>
-          </div>
-          <figure className="range-figure reveal">
-            <img
-              src={image}
-              alt="PULLER FLASH STRIKER hard-body lures in retail packaging"
-              width="800"
-              height="800"
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-        </div>
-      </section>
-
+      {/* Section 02 — Available Models (text options only, no images) */}
       <section className="range-section range-section--yellow" id="models" aria-labelledby="models-title">
         <div className="container">
           <header className="range-head reveal">
-            <p className="section-eyebrow">Available Models</p>
+            <p className="section-eyebrow">{modelsEyebrow}</p>
             <h2 id="models-title" className="section-title">
-              Seven sizes. One series.
+              {modelsTitle}
             </h2>
-            <p>
-              Choose the FLASH STRIKER size that matches your water, target species and technique. FLASH STRIKER is available
-              now in {products.length || 38} colour patterns.
-            </p>
+            {modelsLead ? <p>{modelsLead}</p> : null}
           </header>
           <div className="model-grid">
-            {[
-              ['40', '/contact'],
-              ['90', '/contact'],
-              ['120', '/contact'],
-              ['140', '/contact'],
-              ['160', '#catalog'],
-              ['190', '/contact'],
-              ['220', '/contact'],
-            ].map(([size, href]) => (
+            {MODELS.map(({ size, href, featured }) => (
               <a
                 key={size}
-                className={`model-card reveal${size === '160' ? ' model-card--featured' : ''}`}
+                className={`model-card reveal${featured ? ' model-card--featured' : ''}`}
                 id={`fs-${size}`}
                 href={href}
               >
                 <span className="model-size">{size} DD</span>
-                <h3 className="model-name">{size === '160' ? 'FLASH STRIKER' : `FLASH STRIKER ${size} DD`}</h3>
+                <h3 className="model-name">{featured ? 'FLASH STRIKER' : `FLASH STRIKER ${size} DD`}</h3>
                 <p className="model-note">
-                  {size === '160'
-                    ? `${products.length || 38} colour patterns · 2m+ dive depth. Available now.`
+                  {featured
+                    ? `${colourCount} colour patterns · 2m+ dive depth. Available now.`
                     : 'Hard-body trolling & casting'}
                 </p>
                 <span className="model-cta">
-                  {size === '160' ? 'View colour patterns' : 'Inquire'}{' '}
+                  {featured ? 'View colour patterns' : 'Inquire'}{' '}
                   <svg aria-hidden="true">
                     <use href="#i-circle-arrow" />
                   </svg>
@@ -131,7 +115,15 @@ export default async function FlashStrikerPage() {
         </div>
       </section>
 
-      <ProductCatalog products={products} showSearch={false} />
+      {/* Section 03 — Products */}
+      <ProductCatalog
+        products={products}
+        showSearch={false}
+        yellow
+        eyebrow={productsEyebrow}
+        title={productsHeading}
+        lead={productsLead}
+      />
 
       <section className="dealers" id="dealers" aria-labelledby="dealers-title">
         <div className="container dealers-inner reveal">

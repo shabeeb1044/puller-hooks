@@ -17,6 +17,8 @@ export async function GET(request) {
         { country: { contains: q } },
         { address: { contains: q } },
         { postalCode: { contains: q } },
+        { phone: { contains: q } },
+        { whatsapp: { contains: q } },
       ];
     }
     const inquiries = await prisma.dealerInquiry.findMany({

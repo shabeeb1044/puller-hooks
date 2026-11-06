@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ImageField from './ImageField';
 import MenuLinkFields from './MenuLinkFields';
 import { menuLinkPayload, normalizeMenuLinkType } from '@/lib/menuLinks';
+import { parseJsonResponse } from '@/lib/parseJsonResponse';
 
 function slugify(text) {
   return String(text || '')
@@ -15,27 +16,74 @@ function slugify(text) {
     .slice(0, 80);
 }
 
+function normalizeTheme(value, fallback = 'black') {
+  if (value === 'yellow' || value === 'black') return value;
+  return fallback === 'yellow' ? 'yellow' : 'black';
+}
+
+function ThemePicker({ label = 'Section background', value, onChange, name }) {
+  return (
+    <div className="admin-field">
+      <label>{label}</label>
+      <div className="admin-theme-picker" role="radiogroup" aria-label={label}>
+        <button
+          type="button"
+          className={`admin-theme-dot admin-theme-dot--dark${value === 'black' ? ' is-active' : ''}`}
+          onClick={() => onChange('black')}
+          aria-pressed={value === 'black'}
+          aria-label="Black background"
+          title="Black"
+        />
+        <button
+          type="button"
+          className={`admin-theme-dot admin-theme-dot--yellow${value === 'yellow' ? ' is-active' : ''}`}
+          onClick={() => onChange('yellow')}
+          aria-pressed={value === 'yellow'}
+          aria-label="Yellow background"
+          title="Yellow"
+        />
+        <span className="admin-theme-dot-label">{value === 'yellow' ? 'Yellow' : 'Black'}</span>
+      </div>
+      <input type="hidden" name={name} value={value} readOnly />
+    </div>
+  );
+}
+
+const emptyForm = {
+  name: '',
+  slug: '',
+  categoryId: '',
+  description: '',
+  image: '',
+  bannerImage: '',
+  visible: true,
+  sortOrder: 0,
+  menuLinkType: 'page',
+  menuAnchor: '',
+  menuProductId: '',
+  pageSubtitle: '',
+  pageTitle: '',
+  pageLead: '',
+  modelsSubtitle: '',
+  modelsTitle: '',
+  modelsLead: '',
+  productsSubtitle: '',
+  productsTitle: '',
+  productsLead: '',
+  bannerTheme: 'black',
+  modelsTheme: 'black',
+  productsTheme: 'black',
+};
+
 export default function SubcategoryForm({ subcategoryId }) {
   const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [slugTouched, setSlugTouched] = useState(!!subcategoryId);
-  const [form, setForm] = useState({
-    name: '',
-    slug: '',
-    categoryId: '',
-    description: '',
-    image: '',
-    bannerImage: '',
-    visible: true,
-    sortOrder: 0,
-    menuLinkType: 'page',
-    menuAnchor: '',
-    menuProductId: '',
-    pageTitle: '',
-    pageLead: '',
-  });
+  const [modelCount, setModelCount] = useState(null);
+  const [productCount, setProductCount] = useState(null);
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     fetch('/api/admin/categories')
@@ -47,8 +95,9 @@ export default function SubcategoryForm({ subcategoryId }) {
     if (!subcategoryId) return;
     fetch(`/api/admin/subcategories/${subcategoryId}`)
       .then(async (r) => {
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed to load');
+        const { data: d, error: parseError } = await parseJsonResponse(r);
+        if (parseError) throw new Error(parseError);
+        if (!r.ok) throw new Error(d?.error || 'Failed to load');
         const s = d.subcategory;
         setForm({
           name: s.name || '',
@@ -62,12 +111,42 @@ export default function SubcategoryForm({ subcategoryId }) {
           menuLinkType: normalizeMenuLinkType(s.menuLinkType),
           menuAnchor: s.menuAnchor || '',
           menuProductId: s.menuProductId || '',
+          pageSubtitle: s.pageSubtitle || '',
           pageTitle: s.pageTitle || '',
           pageLead: s.pageLead || '',
+          modelsSubtitle: s.modelsSubtitle || '',
+          modelsTitle: s.modelsTitle || '',
+          modelsLead: s.modelsLead || s.description || '',
+          productsSubtitle: s.productsSubtitle || '',
+          productsTitle: s.productsTitle || '',
+          productsLead: s.productsLead || '',
+          bannerTheme: normalizeTheme(s.bannerTheme),
+          modelsTheme: normalizeTheme(s.modelsTheme),
+          productsTheme: normalizeTheme(s.productsTheme),
         });
+        setError('');
         setSlugTouched(true);
       })
       .catch((e) => setError(e.message));
+  }, [subcategoryId]);
+
+  useEffect(() => {
+    if (!subcategoryId) {
+      setModelCount(null);
+      setProductCount(null);
+      return;
+    }
+    fetch(`/api/admin/products?subcategoryId=${encodeURIComponent(subcategoryId)}&limit=200`)
+      .then((r) => r.json())
+      .then((d) => {
+        const list = d.products || [];
+        setModelCount(list.filter((p) => p.layout === 'vertical' || !p.image).length);
+        setProductCount(list.filter((p) => p.layout !== 'vertical' && p.image).length);
+      })
+      .catch(() => {
+        setModelCount(null);
+        setProductCount(null);
+      });
   }, [subcategoryId]);
 
   function setField(key, value) {
@@ -85,6 +164,7 @@ export default function SubcategoryForm({ subcategoryId }) {
     try {
       const payload = {
         ...form,
+        description: form.modelsLead || form.description || '',
         sortOrder: Number(form.sortOrder) || 0,
         ...menuLinkPayload(form),
       };
@@ -96,8 +176,9 @@ export default function SubcategoryForm({ subcategoryId }) {
           body: JSON.stringify(payload),
         }
       );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Save failed');
+      const { data, error: parseError } = await parseJsonResponse(res);
+      if (parseError) throw new Error(parseError);
+      if (!res.ok) throw new Error(data?.error || 'Save failed');
       router.push('/admin/subcategories');
       router.refresh();
     } catch (err) {
@@ -110,6 +191,7 @@ export default function SubcategoryForm({ subcategoryId }) {
   return (
     <form className="admin-form" onSubmit={onSubmit}>
       {error ? <div className="admin-error">{error}</div> : null}
+
       <fieldset className="admin-form-section">
         <legend>Basics</legend>
         <p className="admin-form-section-desc">Subcategory identity and Products menu link.</p>
@@ -164,23 +246,155 @@ export default function SubcategoryForm({ subcategoryId }) {
       </fieldset>
 
       <fieldset className="admin-form-section">
-        <legend>Page content</legend>
+        <legend>Section 01 — Banner</legend>
+        <p className="admin-form-section-desc">Breadcrumb / hero block: subtitle, heading, and description.</p>
+        <ThemePicker value={form.bannerTheme} onChange={(v) => setField('bannerTheme', v)} name="bannerTheme" />
         <div className="admin-field">
-          <label htmlFor="description">Description</label>
-          <textarea id="description" rows={3} value={form.description} onChange={(e) => setField('description', e.target.value)} />
-        </div>
-        <div className="admin-form-row">
-          <div className="admin-field">
-            <label htmlFor="pageTitle">Page title</label>
-            <input id="pageTitle" value={form.pageTitle} onChange={(e) => setField('pageTitle', e.target.value)} />
-          </div>
+          <label htmlFor="pageSubtitle">Subtitle</label>
+          <input
+            id="pageSubtitle"
+            value={form.pageSubtitle}
+            onChange={(e) => setField('pageSubtitle', e.target.value)}
+            placeholder="PULLER Lures"
+          />
         </div>
         <div className="admin-field">
-          <label htmlFor="pageLead">Page lead</label>
+          <label htmlFor="pageTitle">Heading</label>
+          <input id="pageTitle" value={form.pageTitle} onChange={(e) => setField('pageTitle', e.target.value)} />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="pageLead">Description</label>
           <textarea id="pageLead" rows={3} value={form.pageLead} onChange={(e) => setField('pageLead', e.target.value)} />
         </div>
-        <ImageField label="Image" name="image" value={form.image} onChange={(v) => setField('image', v)} />
-        <ImageField label="Banner image" name="bannerImage" value={form.bannerImage} onChange={(v) => setField('bannerImage', v)} />
+        <ImageField label="Background image" name="bannerImage" value={form.bannerImage} onChange={(v) => setField('bannerImage', v)} />
+        <p className="hint">Background image is used on Black theme. Yellow theme uses the solid logo yellow.</p>
+      </fieldset>
+
+      <fieldset className="admin-form-section">
+        <legend>Section 02 — Available Models</legend>
+        <p className="admin-form-section-desc">
+          Subtitle, title, description, then model options as red text cards. No images in this section.
+        </p>
+        <ThemePicker value={form.modelsTheme} onChange={(v) => setField('modelsTheme', v)} name="modelsTheme" />
+        <div className="admin-field">
+          <label htmlFor="modelsSubtitle">Subtitle</label>
+          <input
+            id="modelsSubtitle"
+            value={form.modelsSubtitle}
+            onChange={(e) => setField('modelsSubtitle', e.target.value)}
+            placeholder="Available Models"
+          />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="modelsTitle">Heading</label>
+          <input
+            id="modelsTitle"
+            value={form.modelsTitle}
+            onChange={(e) => setField('modelsTitle', e.target.value)}
+            placeholder="Seven sizes. One series."
+          />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="modelsLead">Description</label>
+          <textarea
+            id="modelsLead"
+            rows={3}
+            value={form.modelsLead}
+            onChange={(e) => setField('modelsLead', e.target.value)}
+            placeholder="Choose the size that matches your water, target species and technique…"
+          />
+        </div>
+        {subcategoryId ? (
+          <div className="admin-form-section-note">
+            <p>
+              {modelCount == null
+                ? 'Manage model options as name-button products (no image).'
+                : `${modelCount} model option${modelCount === 1 ? '' : 's'} linked to this subcategory.`}
+            </p>
+            <div className="admin-actions" style={{ margin: 0 }}>
+              <a
+                className="admin-btn admin-btn-ghost admin-btn-sm"
+                href={`/admin/products/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}&layout=vertical`}
+              >
+                Add model option
+              </a>
+              <a
+                className="admin-btn admin-btn-ghost admin-btn-sm"
+                href={`/admin/products?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+              >
+                Manage products
+              </a>
+            </div>
+            <p className="hint" style={{ marginTop: '0.75rem' }}>
+              Model options use product name + optional URL only. No image upload.
+            </p>
+          </div>
+        ) : (
+          <p className="hint">Save the subcategory first, then add model options under Products (name button layout).</p>
+        )}
+      </fieldset>
+
+      <fieldset className="admin-form-section">
+        <legend>Section 03 — Products</legend>
+        <p className="admin-form-section-desc">Image product cards / colour patterns catalog.</p>
+        <ThemePicker
+          label="Section background (Yellow or Black)"
+          value={form.productsTheme}
+          onChange={(v) => setField('productsTheme', v)}
+          name="productsTheme"
+        />
+        <div className="admin-field">
+          <label htmlFor="productsSubtitle">Subtitle</label>
+          <input
+            id="productsSubtitle"
+            value={form.productsSubtitle}
+            onChange={(e) => setField('productsSubtitle', e.target.value)}
+            placeholder="Colour Patterns"
+          />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="productsTitle">Heading</label>
+          <input
+            id="productsTitle"
+            value={form.productsTitle}
+            onChange={(e) => setField('productsTitle', e.target.value)}
+            placeholder={form.name || 'Products'}
+          />
+        </div>
+        <div className="admin-field">
+          <label htmlFor="productsLead">Description</label>
+          <textarea
+            id="productsLead"
+            rows={3}
+            value={form.productsLead}
+            onChange={(e) => setField('productsLead', e.target.value)}
+          />
+        </div>
+        {subcategoryId ? (
+          <div className="admin-form-section-note">
+            <p>
+              {productCount == null
+                ? 'Manage image products for this subcategory in Products.'
+                : `${productCount} image product${productCount === 1 ? '' : 's'} linked to this subcategory.`}
+            </p>
+            <div className="admin-actions" style={{ margin: 0 }}>
+              <a
+                className="admin-btn admin-btn-ghost admin-btn-sm"
+                href={`/admin/products/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+              >
+                Add product
+              </a>
+              <a
+                className="admin-btn admin-btn-ghost admin-btn-sm"
+                href={`/admin/products?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+              >
+                Manage products
+              </a>
+            </div>
+          </div>
+        ) : (
+          <p className="hint">Save the subcategory first, then add image products under Products.</p>
+        )}
       </fieldset>
 
       <div className="admin-actions">

@@ -138,14 +138,7 @@
           </div>
           <p class="product-hero__category product-hero__reveal" style="--ph-delay: 80ms">PULLER Co., Ltd.</p>
           <h1 id="contact-page-title" class="product-hero__title product-hero__reveal" style="--ph-delay: 160ms">Let's talk tackle</h1>
-          <p class="product-hero__tagline product-hero__reveal" style="--ph-delay: 240ms">Specs, pricing, wholesale and dealer inquiries</p>
-          <div class="product-hero__reveal" style="--ph-delay: 320ms">
-            <ul class="ph-specs" aria-label="How we can help">
-              <li class="ph-specs__chip"><span>Product specs</span></li>
-              <li class="ph-specs__chip"><span>Wholesale orders</span></li>
-              <li class="ph-specs__chip"><span>Dealer partnerships</span></li>
-            </ul>
-          </div>
+          <p class="product-hero__tagline product-hero__reveal" style="--ph-delay: 240ms">For information about our products, specifications, availability, and pricing, please contact our team.</p>
           <div class="product-hero__reveal" style="--ph-delay: 400ms">
             <div class="ph-cta">
               <a class="ph-btn ph-btn--primary" href="#message">Send a message</a>
@@ -191,61 +184,77 @@
 
     <section class="contact-form-section dealer-apply" id="message" aria-labelledby="contact-form-title">
       <div class="container contact-form-layout">
-        <aside class="contact-info reveal">
-          <p class="section-eyebrow">Send a message</p>
-          <h2 id="contact-form-title" class="section-title">We reply within one business day.</h2>
-          <p>Tell us what you need. Include quantities and destination if you are buying wholesale.</p>
-          <ul class="contact-list">
-            <li><span>Email</span><a href="mailto:sales@pullertackle.com">sales@pullertackle.com</a></li>
-            <li><span>Products</span>HARD BODY LURES, HOOKS, METAL LURES, JIGS</li>
-            <li><span>Dealers</span><a href="dealers.html">Authorized network</a></li>
-          </ul>
-        </aside>
+          <aside class="contact-info reveal">
+            <p class="section-eyebrow">Send a message</p>
+            <ul class="contact-list">
+              <li><span>Email</span><a href="mailto:sales@pullertackle.com">sales@pullertackle.com</a></li>
+              <li><span>Products</span>HARD BODY LURES, HOOKS, METAL LURES, JIGS</li>
+              <li><span>Dealers</span><a href="dealers.html#apply">Authorized network</a></li>
+            </ul>
+            <h2 id="contact-form-title" class="section-title">Dealer &amp; Distribution Inquiries</h2>
+            <p>Interested in becoming a PULLER Authorized <a class="text-link" href="dealers.html#apply">Dealer or Distributor</a> in your country or region? Contact us to learn more about our partnership opportunities.</p>
+          </aside>
 
-        <div class="contact-form-panel reveal">
-          <form class="contact-form contact-form--standalone dealer-form" id="contactPageForm" data-form="contact" novalidate>
-            <p class="dealer-required-note"><span>*</span> Required fields</p>
-            <div class="dealer-field field">
-              <label for="cp-name">Name <span class="req" aria-hidden="true">*</span></label>
-              <input id="cp-name" name="name" type="text" autocomplete="name" required />
-            </div>
-            <div class="dealer-field field">
-              <label for="cp-email">Email <span class="req" aria-hidden="true">*</span></label>
-              <input id="cp-email" name="email" type="email" autocomplete="email" required />
-            </div>
-            <div class="dealer-field field">
-              <label for="cp-company">Company name <span class="req" aria-hidden="true">*</span></label>
-              <input id="cp-company" name="company" type="text" autocomplete="organization" required />
-            </div>
-            <div class="dealer-field field">
-              <label for="cp-topic">Topic</label>
-              <select id="cp-topic" name="topic">
-                <option>Product inquiry</option>
-                <option>Become a dealer</option>
-                <option>Wholesale order</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="field-row field-row--phone">
-              <div class="dealer-field field field--country">
-                <label for="cp-country">Country <span class="req" aria-hidden="true">*</span></label>
-                <div class="country-select" data-name="country" data-input-id="cp-country" data-placeholder="Select a country" data-required></div>
+          <div class="contact-form-panel reveal">
+            <form class="contact-form contact-form--standalone dealer-form" id="contactPageForm" data-form="contact" novalidate>
+              <p class="dealer-required-note"><span>*</span> Required fields</p>
+              <div class="dealer-field field">
+                <label for="cp-name">Name <span class="req" aria-hidden="true">*</span></label>
+                <input id="cp-name" name="name" type="text" autocomplete="name" required />
               </div>
-              <div class="dealer-field field field--phone">
-                <label for="cp-phone">Phone <span class="req" aria-hidden="true">*</span></label>
-                <div class="phone-input" data-name="phone" data-input-id="cp-phone" data-required></div>
+              <div class="dealer-field field">
+                <label for="cp-email">Email <span class="req" aria-hidden="true">*</span></label>
+                <input id="cp-email" name="email" type="email" autocomplete="email" required />
               </div>
-            </div>
-            <div class="dealer-field field field--full">
-              <label for="cp-msg">Message <span class="req" aria-hidden="true">*</span></label>
-              <textarea id="cp-msg" name="message" rows="5" required placeholder="Product names, quantities, destination country…"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">
-              Send Message <svg class="btn-icon" aria-hidden="true"><use href="#i-arrow"/></svg>
-            </button>
-            <p class="form-status" id="formStatus" role="status"></p>
-          </form>
-        </div>
+              <div class="dealer-field field">
+                <label for="cp-company">Company name <span class="req" aria-hidden="true">*</span></label>
+                <input id="cp-company" name="company" type="text" autocomplete="organization" required />
+              </div>
+              <div class="dealer-field field">
+                <label for="cp-topic">Topic</label>
+                <select id="cp-topic" name="topic">
+                  <option>Product inquiry</option>
+                  <option>Become a dealer</option>
+                  <option>Wholesale order</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field-row field-row--phone">
+                <div class="dealer-field field field--country">
+                  <label for="cp-country">Country <span class="req" aria-hidden="true">*</span></label>
+                  <div class="country-select" data-name="country" data-input-id="cp-country" data-placeholder="Select a country" data-required></div>
+                </div>
+                <div class="dealer-field field field--phone">
+                  <label for="cp-phone">Phone <span class="req" aria-hidden="true">*</span></label>
+                  <div class="phone-input" data-name="phone" data-input-id="cp-phone" data-required></div>
+                </div>
+              </div>
+              <div class="field-row field-row--phone field-row--whatsapp">
+                <div class="dealer-field field field--country">
+                  <label for="cp-whatsapp-country">WhatsApp dial code <span class="field-optional">(optional)</span></label>
+                  <div
+                    class="country-select"
+                    data-name="whatsapp_country"
+                    data-input-id="cp-whatsapp-country"
+                    data-placeholder="Select dial code"
+                    data-phone-target="cp-whatsapp"
+                  ></div>
+                </div>
+                <div class="dealer-field field field--phone">
+                  <label for="cp-whatsapp">WhatsApp number <span class="field-optional">(optional)</span></label>
+                  <div class="phone-input" data-name="whatsapp" data-input-id="cp-whatsapp" data-placeholder="WhatsApp number" data-independent></div>
+                </div>
+              </div>
+              <div class="dealer-field field field--full">
+                <label for="cp-msg">Message <span class="req" aria-hidden="true">*</span></label>
+                <textarea id="cp-msg" name="message" rows="5" required placeholder="Product names, quantities, destination country…"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Send Message <svg class="btn-icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+              </button>
+              <p class="form-status" id="formStatus" role="status"></p>
+            </form>
+          </div>
       </div>
     </section>
 

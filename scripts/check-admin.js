@@ -1,20 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
-const { PrismaLibSQL } = require('@prisma/adapter-libsql');
-const { createClient } = require('@libsql/client');
 const bcrypt = require('bcryptjs');
 
 async function main() {
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
-  console.log('usingTurso', Boolean(url && authToken));
-
-  let prisma;
-  if (url && authToken) {
-    const libsql = createClient({ url, authToken });
-    prisma = new PrismaClient({ adapter: new PrismaLibSQL(libsql) });
-  } else {
-    prisma = new PrismaClient();
-  }
+  const prisma = new PrismaClient();
+  console.log('usingMySQL', Boolean(process.env.DATABASE_URL?.startsWith('mysql')));
 
   try {
     const users = await prisma.adminUser.findMany({

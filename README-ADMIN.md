@@ -1,6 +1,11 @@
 # PULLER Admin CMS
 
-## Quick start
+**End-user how-to (login, products, categories, inquiries):**  
+→ **[docs/ADMIN-USER-GUIDE.md](docs/ADMIN-USER-GUIDE.md)**
+
+---
+
+## Quick start (developers)
 
 ```bash
 npm install
@@ -8,7 +13,8 @@ npm run db:setup   # migrate + seed (needs ADMIN_SETUP_PASSWORD in .env the firs
 npm run dev
 ```
 
-Admin panel: [http://localhost:3000/admin](http://localhost:3000/admin)
+- Admin panel: [http://localhost:3000/admin](http://localhost:3000/admin)  
+- Login: [http://localhost:3000/management-portal](http://localhost:3000/management-portal)
 
 ### First-time admin account
 
@@ -17,7 +23,7 @@ Admin panel: [http://localhost:3000/admin](http://localhost:3000/admin)
 3. Set `ADMIN_SETUP_EMAIL` and `ADMIN_SETUP_PASSWORD`
 4. Run `npm run db:seed`
 5. Remove `ADMIN_SETUP_PASSWORD` from `.env` after seeding
-6. Sign in at `/admin/login` and change the password under **Settings** before production use
+6. Sign in at `/management-portal` and change the password under **Settings** before production use
 
 Passwords are stored only as bcrypt hashes (local SQLite or Turso).
 
@@ -51,6 +57,13 @@ npx wrangler secret put AUTH_SECRET
 npm run deploy
 ```
 
+On Windows, preferred path:
+
+```bash
+bash scripts/wsl-deploy.sh
+bash scripts/wsl-cf-deploy.sh
+```
+
 Worker URL example: `https://fish-hook.<your-subdomain>.workers.dev`  
 Admin login: `/management-portal` on that Worker URL (not the old static Pages preview).
 
@@ -58,21 +71,23 @@ Optional: update [VC++ Redistributable](https://learn.microsoft.com/en-us/cpp/wi
 
 **Note:** Admin image uploads write to `public/uploads` on disk. That does not persist on Cloudflare Workers — use Cloudflare R2 (or keep uploads on a Node host) for production media.
 
-## Admin sections
+## Admin sections (summary)
 
-1. **Dashboard** – counts
-2. **Products** – CRUD, publish/draft, horizontal/vertical layout, drag reorder
-3. **Categories** – nav categories, visibility, order
-4. **Subcategories** – nested under categories
-5. **Dealers Inquiries** – form submissions
-6. **Contact Inquiries** – form submissions
-7. **Settings** – change password
+1. **Dashboard** – counts  
+2. **Products** – CRUD, publish/draft, horizontal/vertical layout, drag reorder  
+3. **Categories** – nav categories, page sections, themes, menu link targets  
+4. **Subcategories** – nested under categories  
+5. **Dealers Inquiries** – form submissions  
+6. **Contact Inquiries** – form submissions  
+7. **Settings** – change password  
+
+Full step-by-step instructions: [docs/ADMIN-USER-GUIDE.md](docs/ADMIN-USER-GUIDE.md).
 
 ## Public routes
 
-- `/products/[category]` – category listing
-- `/products/[category]/[subcategory]` – subcategory listing
-- `/products/flash-striker` – Flash Striker (legacy URL kept)
-- `/products/hooks` – Hooks (legacy URL kept)
+- `/products/[category]` – category listing  
+- `/products/[category]/[subcategory]` – subcategory listing  
+- `/products/flash-striker` – Flash Striker (legacy URL kept)  
+- `/products/hooks` – Hooks (legacy URL kept)  
 
 Published products appear automatically on their category/subcategory pages and in the Products dropdown when the category/subcategory is visible.

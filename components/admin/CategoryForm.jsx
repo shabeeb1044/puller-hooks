@@ -30,8 +30,8 @@ function ThemePicker({ label = 'Section background', value, onChange, name }) {
           className={`admin-theme-dot admin-theme-dot--dark${value === 'black' ? ' is-active' : ''}`}
           onClick={() => onChange('black')}
           aria-pressed={value === 'black'}
-          aria-label="Dark background"
-          title="Dark"
+          aria-label="Black background"
+          title="Black"
         />
         <button
           type="button"
@@ -41,7 +41,7 @@ function ThemePicker({ label = 'Section background', value, onChange, name }) {
           aria-label="Yellow background"
           title="Yellow"
         />
-        <span className="admin-theme-dot-label">{value === 'yellow' ? 'Yellow' : 'Dark'}</span>
+        <span className="admin-theme-dot-label">{value === 'yellow' ? 'Yellow' : 'Black'}</span>
       </div>
       <input type="hidden" name={name} value={value} readOnly />
     </div>
@@ -220,7 +220,7 @@ export default function CategoryForm({ categoryId }) {
           <textarea id="pageLead" rows={3} value={form.pageLead} onChange={(e) => setField('pageLead', e.target.value)} />
         </div>
         <ImageField label="Background image" name="bannerImage" value={form.bannerImage} onChange={(v) => setField('bannerImage', v)} />
-        <p className="hint">Background image is used on Dark theme. Yellow theme uses the solid logo yellow.</p>
+        <p className="hint">Background image is used on Black theme. Yellow theme uses the solid logo yellow.</p>
       </fieldset>
 
       <fieldset className="admin-form-section">
@@ -256,9 +256,14 @@ export default function CategoryForm({ categoryId }) {
       <fieldset className="admin-form-section">
         <legend>Section 03 — Products</legend>
         <p className="admin-form-section-desc">
-          Product styles block (grouped red buttons). Red buttons stay red on Yellow and Dark.
+          Product styles / catalog block. Choose Yellow or Black background. Red name buttons stay red on both.
         </p>
-        <ThemePicker value={form.productsTheme} onChange={(v) => setField('productsTheme', v)} name="productsTheme" />
+        <ThemePicker
+          label="Section background (Yellow or Black)"
+          value={form.productsTheme}
+          onChange={(v) => setField('productsTheme', v)}
+          name="productsTheme"
+        />
         <div className="admin-field">
           <label htmlFor="productsSubtitle">Subtitle</label>
           <input
@@ -294,12 +299,23 @@ export default function CategoryForm({ categoryId }) {
                 ? 'Manage products for this category in Products.'
                 : `${productCount} product${productCount === 1 ? '' : 's'} linked to this category. Groups use subcategory names.`}
             </p>
-            <a className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/products?categoryId=${categoryId}`}>
-              Manage products
-            </a>
+            <div className="admin-actions" style={{ margin: 0 }}>
+              <a
+                className="admin-btn admin-btn-ghost admin-btn-sm"
+                href={`/admin/products/new?categoryId=${categoryId}&layout=vertical`}
+              >
+                Add name button
+              </a>
+              <a className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/products?categoryId=${categoryId}`}>
+                Manage products
+              </a>
+            </div>
+            <p className="hint" style={{ marginTop: '0.75rem' }}>
+              Name buttons use product name + optional URL (blank = #). No image or icon upload.
+            </p>
           </div>
         ) : (
-          <p className="hint">Save the category first, then add products under Products.</p>
+          <p className="hint">Save the category first, then add name-button products under Products.</p>
         )}
       </fieldset>
 
