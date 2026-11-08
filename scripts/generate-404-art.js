@@ -1,0 +1,350 @@
+const fs = require('fs');
+const path = require('path');
+const sharp = require('sharp');
+
+// Create rich 404 SVG illustration
+const width = 1200;
+const height = 800;
+
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bgGlow" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#0d2b4d" stop-opacity="0.85"/>
+      <stop offset="45%" stop-color="#06162a" stop-opacity="0.95"/>
+      <stop offset="80%" stop-color="#020813" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Ray Gradient -->
+    <linearGradient id="lightRay" x1="0%" y1="0%" x2="40%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22"/>
+      <stop offset="50%" stop-color="#0284c7" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="lightRayYellow" x1="0%" y1="0%" x2="30%" y2="100%">
+      <stop offset="0%" stop-color="#e6ff00" stop-opacity="0.14"/>
+      <stop offset="60%" stop-color="#f7ed22" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Hook Chrome Metallic Gradient -->
+    <linearGradient id="chromeHook" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="18%" stop-color="#94a3b8"/>
+      <stop offset="35%" stop-color="#334155"/>
+      <stop offset="55%" stop-color="#0f172a"/>
+      <stop offset="70%" stop-color="#64748b"/>
+      <stop offset="85%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+
+    <!-- Hook Edge Highlight -->
+    <linearGradient id="hookHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#e6ff00" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Neon Yellow Glow -->
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur1"/>
+      <feGaussianBlur stdDeviation="20" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="abyssBlur">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+
+    <!-- Bubble Gradient -->
+    <radialGradient id="bubbleGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="85%" stop-color="#0284c7" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 404 Text Gradient -->
+    <linearGradient id="text404Grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0369a1" stop-opacity="0.02"/>
+    </linearGradient>
+
+    <!-- Red Accent Gradient -->
+    <linearGradient id="redAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d6d"/>
+      <stop offset="100%" stop-color="#d81e37"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Ocean Base -->
+  <rect width="${width}" height="${height}" fill="#01060f"/>
+  <rect width="${width}" height="${height}" fill="url(#bgGlow)"/>
+
+  <!-- Subtle underwater depth contour lines / ocean grid -->
+  <g opacity="0.08" stroke="#38bdf8" stroke-width="1" fill="none">
+    <path d="M-100,180 Q300,240 700,190 T1300,220" />
+    <path d="M-100,320 Q250,380 650,310 T1300,350" />
+    <path d="M-100,480 Q400,520 800,470 T1300,500" />
+    <path d="M-100,640 Q350,680 750,630 T1300,660" />
+  </g>
+
+  <!-- Volumetric Surface Light Shafts -->
+  <g opacity="0.9">
+    <polygon points="320,0 480,0 620,800 380,800" fill="url(#lightRay)" />
+    <polygon points="460,0 580,0 790,800 610,800" fill="url(#lightRayYellow)" />
+    <polygon points="680,0 760,0 980,800 860,800" fill="url(#lightRay)" opacity="0.6"/>
+    <polygon points="180,0 260,0 360,800 240,800" fill="url(#lightRay)" opacity="0.4"/>
+  </g>
+
+  <!-- Giant Stylized 404 in Background -->
+  <g font-family="'Barlow Condensed', 'Arial Black', sans-serif" font-weight="900" text-anchor="middle" letter-spacing="18">
+    <!-- Drop Shadow / Glow -->
+    <text x="600" y="460" font-size="340" fill="none" stroke="#e6ff00" stroke-width="2" opacity="0.16" filter="url(#softGlow)">404</text>
+    <text x="600" y="460" font-size="340" fill="url(#text404Grad)" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.3">404</text>
+  </g>
+
+  <!-- Deep Ocean Particles / Plankton -->
+  <g fill="#e6ff00" opacity="0.4">
+    <circle cx="280" cy="220" r="1.5" />
+    <circle cx="340" cy="460" r="1.2" />
+    <circle cx="420" cy="180" r="2" opacity="0.6" />
+    <circle cx="780" cy="260" r="1.8" opacity="0.5" />
+    <circle cx="890" cy="410" r="1.5" />
+    <circle cx="940" cy="210" r="2.2" opacity="0.7" />
+    <circle cx="510" cy="620" r="1.2" />
+    <circle cx="710" cy="590" r="1.8" />
+    <circle cx="210" cy="540" r="2" />
+    <circle cx="840" cy="680" r="1.5" />
+  </g>
+
+  <!-- Water Bubbles (foreground & midground) -->
+  <g>
+    <!-- Bubble cluster around hook -->
+    <circle cx="670" cy="420" r="14" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="1" stroke-opacity="0.4"/>
+    <ellipse cx="666" cy="416" rx="4" ry="2" fill="#ffffff" opacity="0.7" transform="rotate(-30 666 416)"/>
+
+    <circle cx="690" cy="360" r="9" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.3"/>
+    <ellipse cx="688" cy="358" rx="2.5" ry="1.2" fill="#ffffff" opacity="0.6"/>
+
+    <circle cx="650" cy="310" r="18" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.5"/>
+    <ellipse cx="645" cy="305" rx="5" ry="2.5" fill="#ffffff" opacity="0.8" transform="rotate(-25 645 305)"/>
+
+    <circle cx="630" cy="240" r="11" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.4"/>
+    <circle cx="660" cy="190" r="15" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="1" stroke-opacity="0.5"/>
+    <circle cx="640" cy="130" r="8" fill="url(#bubbleGrad)"/>
+    <circle cx="655" cy="80" r="12" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.4"/>
+
+    <!-- Ambient rising bubbles -->
+    <circle cx="390" cy="340" r="7" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="0.6" stroke-opacity="0.3"/>
+    <circle cx="370" cy="270" r="12" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.4"/>
+    <circle cx="810" cy="490" r="10" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="0.7" stroke-opacity="0.3"/>
+    <circle cx="830" cy="390" r="6" fill="url(#bubbleGrad)"/>
+    <circle cx="490" cy="510" r="8" fill="url(#bubbleGrad)"/>
+  </g>
+
+  <!-- SNAPPED LINE (Neon Yellow / Electric Lime) -->
+  <g>
+    <!-- Line Glow -->
+    <path d="M 600 -10 C 600 60, 585 100, 595 150 C 600 170, 580 185, 570 205" 
+          fill="none" stroke="#e6ff00" stroke-width="7" opacity="0.3" filter="url(#neonGlow)"/>
+    <path d="M 600 -10 C 600 60, 585 100, 595 150 C 600 170, 580 185, 570 205" 
+          fill="none" stroke="#f7ed22" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Snapped Frayed Fibers at break point -->
+    <path d="M 570 205 Q 562 215 558 226" fill="none" stroke="#e6ff00" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M 570 205 Q 574 218 572 232" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M 570 205 Q 580 212 586 222" fill="none" stroke="#e6ff00" stroke-width="1.2" stroke-linecap="round"/>
+
+    <!-- Snapped leader remnant tied to hook eyelet -->
+    <path d="M 575 258 C 572 250, 566 242, 568 234" fill="none" stroke="#e6ff00" stroke-width="2" stroke-linecap="round"/>
+    <!-- Knot on eyelet -->
+    <ellipse cx="578" cy="265" rx="5" ry="4" fill="#e6ff00" opacity="0.9"/>
+  </g>
+
+  <!-- THE FORGED FISHING HOOK (Heavy Saltwater Big Game Tackle) -->
+  <g filter="url(#softGlow)" opacity="0.3">
+    <!-- Hook silhouette ambient shadow/glow in deep sea -->
+    <path d="M 578 270 
+             L 578 450 
+             A 120 120 0 0 0 818 450 
+             L 818 360
+             L 792 385
+             L 796 445
+             A 96 96 0 0 1 602 445
+             L 602 270 Z" 
+          fill="#38bdf8" />
+  </g>
+
+  <g id="mainHook">
+    <!-- Eyelet Ring Outer -->
+    <circle cx="578" cy="270" r="22" fill="url(#chromeHook)" stroke="#94a3b8" stroke-width="2"/>
+    <!-- Eyelet Hole -->
+    <circle cx="578" cy="270" r="11" fill="#06182c"/>
+    <circle cx="578" cy="270" r="11" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.5"/>
+
+    <!-- Eyelet Chrome Gleam -->
+    <path d="M 565 260 A 18 18 0 0 1 588 254" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+
+    <!-- Hook Body (Eyelet down shank, around bend, barb and needle point) -->
+    <!-- Solid base forged steel -->
+    <path d="M 567 288
+             C 567 340, 566 400, 566 460
+             C 566 545, 630 610, 715 610
+             C 795 610, 855 550, 855 465
+             C 855 425, 850 380, 842 340
+             C 840 330, 832 322, 828 322
+             C 824 322, 818 330, 818 340
+             C 816 355, 810 380, 788 395
+             C 782 399, 785 406, 792 405
+             C 808 402, 822 390, 825 445
+             C 827 510, 780 575, 715 575
+             C 655 575, 602 525, 602 460
+             C 602 400, 603 340, 603 288
+             Z" 
+          fill="url(#chromeHook)" 
+          stroke="#0f172a" 
+          stroke-width="1.5"/>
+
+    <!-- Outer Chrome Highlight Rim (Gleaming Edge) -->
+    <path d="M 568 290 
+             L 567 460
+             C 567 542, 630 608, 715 608
+             C 793 608, 853 548, 853 465
+             C 853 425, 848 380, 840 340
+             L 828 322" 
+          fill="none" 
+          stroke="url(#hookHighlight)" 
+          stroke-width="4.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+
+    <!-- Inner Spine Metallic Reflection -->
+    <path d="M 602 292
+             L 602 460
+             C 602 522, 652 573, 715 573
+             C 778 573, 825 508, 823 445
+             L 790 398" 
+          fill="none" 
+          stroke="#94a3b8" 
+          stroke-width="2" 
+          opacity="0.7"/>
+
+    <!-- Needle-Sharp Point Gleam / Star Glint -->
+    <g transform="translate(828, 322)">
+      <circle cx="0" cy="0" r="4" fill="#ffffff" filter="url(#neonGlow)"/>
+      <line x1="-16" y1="0" x2="16" y2="0" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+      <line x1="0" y1="-16" x2="0" y2="16" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+      <circle cx="0" cy="0" r="12" fill="none" stroke="#e6ff00" stroke-width="0.8" opacity="0.5"/>
+    </g>
+
+    <!-- Forged Flat Stamping Line (PULLER tackle craft detail) -->
+    <path d="M 585 320 L 585 440" stroke="#0f172a" stroke-width="2" opacity="0.6"/>
+    <path d="M 587 320 L 587 440" stroke="#ffffff" stroke-width="1" opacity="0.4"/>
+  </g>
+
+  <!-- PULLER Badge / HUD Overlay Graphic (Top Right) -->
+  <g transform="translate(930, 60)" font-family="'Barlow Condensed', sans-serif">
+    <!-- Dark tech container -->
+    <rect x="0" y="0" width="210" height="74" rx="4" fill="#071629" fill-opacity="0.85" stroke="#1f293d" stroke-width="1.5"/>
+    <!-- Top red accent indicator bar -->
+    <rect x="0" y="0" width="210" height="3" fill="#d81e37"/>
+    
+    <text x="16" y="26" font-size="11" font-weight="700" fill="#e6ff00" letter-spacing="2">PULLER SYSTEM // ALERT</text>
+    <text x="16" y="47" font-size="18" font-weight="800" fill="#ffffff" letter-spacing="1">STATUS: OFF THE HOOK</text>
+    <text x="16" y="63" font-size="10" font-weight="500" fill="#94a3b8" letter-spacing="1">DEPTH: 404 FATHOMS</text>
+
+    <circle cx="190" cy="24" r="4" fill="#d81e37">
+      <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Bottom Coordinates / Watermark -->
+  <g transform="translate(60, 750)" font-family="'Barlow Condensed', sans-serif" font-size="12" font-weight="600" fill="#64748b" letter-spacing="2">
+    <text x="0" y="0">PULLER CO., LTD. // PRECISION TACKLE CO.</text>
+    <text x="0" y="18" font-size="10" font-weight="400" fill="#475569" letter-spacing="1">LAT 00° 00' 00" N • LON 00° 00' 00" E • TARGET LOST</text>
+  </g>
+
+  <!-- Vignette overlay around border -->
+  <rect width="${width}" height="${height}" fill="none" stroke="#000000" stroke-width="12" opacity="0.6"/>
+</svg>`;
+
+async function main() {
+  const publicDir = path.join(__dirname, '..', 'public', 'images');
+  const rootImagesDir = path.join(__dirname, '..', 'images');
+
+  if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
+  if (!fs.existsSync(rootImagesDir)) fs.mkdirSync(rootImagesDir, { recursive: true });
+
+  const svgPathPublic = path.join(publicDir, '404-hook.svg');
+  const svgPathRoot = path.join(rootImagesDir, '404-hook.svg');
+
+  fs.writeFileSync(svgPathPublic, svg, 'utf8');
+  fs.writeFileSync(svgPathRoot, svg, 'utf8');
+  console.log('Saved 404-hook.svg');
+
+  const svgBuffer = Buffer.from(svg);
+
+  // Generate WebP
+  const webpBuffer = await sharp(svgBuffer)
+    .webp({ quality: 92 })
+    .toBuffer();
+
+  fs.writeFileSync(path.join(publicDir, '404-hook.webp'), webpBuffer);
+  fs.writeFileSync(path.join(rootImagesDir, '404-hook.webp'), webpBuffer);
+  console.log('Saved 404-hook.webp (size:', webpBuffer.length, 'bytes)');
+
+  // Generate PNG
+  const pngBuffer = await sharp(svgBuffer)
+    .png({ compressionLevel: 8 })
+    .toBuffer();
+
+  fs.writeFileSync(path.join(publicDir, '404-hook.png'), pngBuffer);
+  fs.writeFileSync(path.join(rootImagesDir, '404-hook.png'), pngBuffer);
+  console.log('Saved 404-hook.png (size:', pngBuffer.length, 'bytes)');
+
+  // Also composite a cinematic wide hero banner version using existing underwater background if desired!
+  const underwaterBgPath = path.join(publicDir, 'flash-striker-underwater.webp');
+  if (fs.existsSync(underwaterBgPath)) {
+    try {
+      const bg = sharp(underwaterBgPath).resize(1920, 1080, { fit: 'cover' });
+      const bannerWebp = await bg
+        .modulate({ brightness: 0.35, saturation: 1.1 })
+        .composite([
+          {
+            input: await sharp(svgBuffer).resize(1200, 800, { fit: 'contain' }).png().toBuffer(),
+            gravity: 'center',
+          }
+        ])
+        .webp({ quality: 90 })
+        .toBuffer();
+
+      fs.writeFileSync(path.join(publicDir, '404-hero-banner.webp'), bannerWebp);
+      fs.writeFileSync(path.join(rootImagesDir, '404-hero-banner.webp'), bannerWebp);
+      console.log('Saved 404-hero-banner.webp (size:', bannerWebp.length, 'bytes)');
+    } catch (err) {
+      console.warn('Could not composite hero banner:', err.message);
+    }
+  }
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
+

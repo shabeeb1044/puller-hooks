@@ -60,6 +60,7 @@ export default function DealerDirectory({ regions = [] }) {
                 <div className="dealer-directory-grid" role="list">
                   {region.dealers.map((dealer, index) => {
                     const lines = escapeLines(dealer.address);
+                    const country = String(dealer.country || '').trim();
                     return (
                       <article
                         key={dealer.id}
@@ -68,10 +69,13 @@ export default function DealerDirectory({ regions = [] }) {
                         style={{ transitionDelay: `${Math.min(index, 8) * 0.05}s` }}
                       >
                         <div className="dealer-card-inner">
+                          {country ? (
+                            <p className="dealer-card-country">{country}</p>
+                          ) : null}
                           <h4 className="dealer-card-title">{dealer.name}</h4>
                           <address className="dealer-card-address">
-                            {lines.map((line) => (
-                              <span key={line}>{line}</span>
+                            {lines.map((line, lineIndex) => (
+                              <span key={`${dealer.id}-${lineIndex}`}>{line}</span>
                             ))}
                           </address>
                         </div>

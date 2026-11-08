@@ -172,6 +172,7 @@ export default function DealerNetworkManager() {
   const filteredDealers = filterRegionId
     ? dealers.filter((d) => d.regionId === filterRegionId)
     : dealers;
+  const publicVisibleCount = dealers.filter((d) => d.visible).length;
 
   return (
     <>
@@ -199,6 +200,12 @@ export default function DealerNetworkManager() {
       </div>
 
       {error ? <div className="admin-error">{error}</div> : null}
+
+      {tab === 'dealers' && dealers.length > 0 && publicVisibleCount === 0 ? (
+        <div className="admin-error" role="status">
+          All dealers are currently Hidden. The public “Our Dealer” section will stay empty until you set at least one to Visible.
+        </div>
+      ) : null}
 
       {tab === 'regions' ? (
         <div className="admin-grid-2">
@@ -275,8 +282,9 @@ export default function DealerNetworkManager() {
                       <td>
                         <button
                           type="button"
-                          className="admin-btn admin-btn-ghost admin-btn-sm"
+                          className={`admin-btn admin-btn-sm${region.visible ? '' : ' admin-btn-ghost'}`}
                           onClick={() => toggleRegionVisible(region)}
+                          title={region.visible ? 'Click to hide this region on the site' : 'Click to show this region on the site'}
                         >
                           {region.visible ? 'Visible' : 'Hidden'}
                         </button>
@@ -433,8 +441,9 @@ export default function DealerNetworkManager() {
                       <td>
                         <button
                           type="button"
-                          className="admin-btn admin-btn-ghost admin-btn-sm"
+                          className={`admin-btn admin-btn-sm${dealer.visible ? '' : ' admin-btn-ghost'}`}
                           onClick={() => toggleDealerVisible(dealer)}
+                          title={dealer.visible ? 'Click to hide this dealer on the site' : 'Click to show this dealer on the site'}
                         >
                           {dealer.visible ? 'Visible' : 'Hidden'}
                         </button>

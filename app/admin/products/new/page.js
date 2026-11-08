@@ -10,7 +10,7 @@ export default function NewProductPage() {
         </div>
       </div>
       <div className="admin-panel">
-        <ProductForm />
+        <ProductForm mode="product" />
       </div>
     </>
   );

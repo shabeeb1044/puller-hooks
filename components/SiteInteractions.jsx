@@ -3,12 +3,15 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
+import { DEFAULT_SOCIAL_LINKS, buildWhatsAppUrl } from '@/lib/socialLinks';
+
 /**
  * Ports js/main.js site interactions for the App Router.
  * Re-binds on route change so client navigations keep the same behavior.
  */
-export default function SiteInteractions() {
-  const pathname = usePathname();
+export default function SiteInteractions({ socialLinks = DEFAULT_SOCIAL_LINKS }) {
+  const pathname = usePathname() || '';
+  const whatsapp = socialLinks?.whatsapp || DEFAULT_SOCIAL_LINKS.whatsapp;
 
   useEffect(() => {
     const $ = (s, c = document) => c.querySelector(s);
@@ -16,10 +19,7 @@ export default function SiteInteractions() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const cleanups = [];
 
-    const WHATSAPP_NUMBER = '919539470261';
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      'Hello PULLER, I would like to inquire about your fishing tackle.'
-    )}`;
+    const whatsappUrl = buildWhatsAppUrl(whatsapp);
     $$('[data-whatsapp]').forEach((link) => {
       link.href = whatsappUrl;
     });
@@ -508,7 +508,7 @@ export default function SiteInteractions() {
     }
 
     return () => cleanups.forEach((fn) => fn());
-  }, [pathname]);
+  }, [pathname, whatsapp]);
 
   return null;
 }

@@ -7,6 +7,9 @@ out
 .env
 .env*.local
 .dev.vars
+backups/
+*.sql
+*.sql.gz
 prisma/*.db
 prisma/*.db-journal
 public/uploads/*

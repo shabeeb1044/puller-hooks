@@ -2,13 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  DEFAULT_SOCIAL_LINKS,
+  buildWhatsAppUrl,
+} from '@/lib/socialLinks';
 
-export default function Footer() {
-  const pathname = usePathname();
+export default function Footer({ socialLinks = DEFAULT_SOCIAL_LINKS }) {
+  const pathname = usePathname() || '';
   const metal = pathname === '/' ? '#card-metal' : '/#card-metal';
   const jigs = pathname === '/' ? '#card-jigs' : '/#card-jigs';
   const products = pathname === '/' ? '#products' : '/#products';
   const dealers = pathname === '/' ? '#dealers' : '/dealers';
+  const facebook = socialLinks.facebook || DEFAULT_SOCIAL_LINKS.facebook;
+  const instagram = socialLinks.instagram || DEFAULT_SOCIAL_LINKS.instagram;
+  const youtube = socialLinks.youtube || DEFAULT_SOCIAL_LINKS.youtube;
+  const whatsappHref = buildWhatsAppUrl(
+    socialLinks.whatsapp || DEFAULT_SOCIAL_LINKS.whatsapp,
+    { withMessage: false }
+  );
 
   return (
     <>
@@ -141,7 +152,7 @@ export default function Footer() {
             <div className="footer-social-wrap">
               <div className="footer-socials" aria-label="Social media links">
                 <a
-                  href="https://facebook.com"
+                  href={facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-link"
@@ -152,7 +163,7 @@ export default function Footer() {
                   </svg>
                 </a>
                 <a
-                  href="https://instagram.com"
+                  href={instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-link"
@@ -163,7 +174,7 @@ export default function Footer() {
                   </svg>
                 </a>
                 <a
-                  href="https://youtube.com"
+                  href={youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-link"
@@ -175,7 +186,7 @@ export default function Footer() {
                 </a>
                 <a
                   data-whatsapp
-                  href="https://wa.me/919539470261"
+                  href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-link"
@@ -200,7 +211,7 @@ export default function Footer() {
       <div className="float-actions" aria-label="Quick social links">
         <a
           className="instagram-float"
-          href="https://instagram.com"
+          href={instagram}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Follow us on Instagram"
@@ -212,7 +223,7 @@ export default function Footer() {
         <a
           className="whatsapp-float"
           data-whatsapp
-          href="https://wa.me/919539470261"
+          href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp"

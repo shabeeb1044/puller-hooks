@@ -4,15 +4,19 @@ import Footer from '@/components/Footer';
 import SiteInteractions from '@/components/SiteInteractions';
 import FormScripts from '@/components/FormScripts';
 import { getNavCategories } from '@/lib/cms';
+import { getSocialLinks } from '@/lib/socialLinksStore';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SiteLayout({ children }) {
-  const categories = await getNavCategories();
+  const [categories, socialLinks] = await Promise.all([
+    getNavCategories(),
+    getSocialLinks(),
+  ]);
 
   return (
     <>
-      <link rel="stylesheet" href="/css/style.min.css" />
+      <link rel="stylesheet" href="/css/style.css?v=20261109-nav-label" />
       <link rel="stylesheet" href="/css/flag-icons.min.css" />
       <link rel="stylesheet" href="/css/forms.css" />
       <Icons />
@@ -21,8 +25,8 @@ export default async function SiteLayout({ children }) {
       </a>
       <Header categories={categories} />
       {children}
-      <Footer />
-      <SiteInteractions />
+      <Footer socialLinks={socialLinks} />
+      <SiteInteractions socialLinks={socialLinks} />
       <FormScripts />
     </>
   );

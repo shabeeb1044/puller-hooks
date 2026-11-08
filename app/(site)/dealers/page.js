@@ -2,6 +2,8 @@ import { HtmlMain } from '@/components/HtmlMain';
 import DealerDirectory from '@/components/DealerDirectory';
 import { getDealerDirectory } from '@/lib/cms';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Become a Dealer | PULLER Co., Ltd.",
   description: "Apply to become an authorized PULLER dealer. Wholesale fishing hooks, FLASH STRIKER hard-body lures, metal lures and jigs for shops and distributors worldwide.",

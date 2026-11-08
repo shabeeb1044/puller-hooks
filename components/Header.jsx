@@ -4,20 +4,34 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   categoryPageHref,
+  isMenuHrefPlaceholder,
   normalizeMenuLinkType,
   resolveMenuHref,
   subcategoryPageHref,
 } from '@/lib/menuLinks';
 
 function isCurrent(pathname, href) {
-  if (!href || href.startsWith('#') || href.includes('#')) return false;
+  if (!pathname || !href || href.startsWith('#') || href.includes('#')) return false;
   if (href === '/') return pathname === '/';
   if (/^https?:\/\//i.test(href)) return false;
   return pathname === href || pathname.startsWith(href + '/');
 }
 
+/** Link when href is real; span.nav-label when #/empty (same format as static HTML). */
+function MenuLabel({ href, className, children, ...props }) {
+  if (isMenuHrefPlaceholder(href)) {
+    return <span className={['nav-label', className].filter(Boolean).join(' ')}>{children}</span>;
+  }
+  return (
+    <Link href={href} className={className} {...props}>
+      {children}
+    </Link>
+  );
+}
+
 export default function Header({ categories = [] }) {
-  const pathname = usePathname();
+  const rawPath = usePathname();
+  const pathname = rawPath || '';
   const homeProducts = pathname === '/' ? '#products' : '/#products';
   const homeTop = pathname === '/' ? '#top' : '/#top';
   const dealersHref =
@@ -86,9 +100,9 @@ export default function Header({ categories = [] }) {
                     return (
                       <li className="has-dropdown" key={category.id}>
                         <div className="nav-item">
-                          <Link href={catHref} className={catCurrent ? 'is-current' : undefined}>
+                          <MenuLabel href={catHref} className={catCurrent ? 'is-current' : undefined}>
                             {category.name}
-                          </Link>
+                          </MenuLabel>
                           <button
                             type="button"
                             className="nav-plus"
@@ -104,13 +118,13 @@ export default function Header({ categories = [] }) {
                             const current = isCurrent(pathname, href);
                             return (
                               <li key={sub.id}>
-                                <Link
+                                <MenuLabel
                                   href={href}
                                   className={current ? 'is-current' : undefined}
                                   aria-current={current ? 'page' : undefined}
                                 >
                                   {sub.name}
-                                </Link>
+                                </MenuLabel>
                               </li>
                             );
                           })}
@@ -121,13 +135,13 @@ export default function Header({ categories = [] }) {
 
                   return (
                     <li key={category.id}>
-                      <Link
+                      <MenuLabel
                         href={catHref}
                         className={catCurrent ? 'is-current' : undefined}
                         aria-current={catCurrent ? 'page' : undefined}
                       >
                         {category.name}
-                      </Link>
+                      </MenuLabel>
                     </li>
                   );
                 })}

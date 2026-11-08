@@ -3,13 +3,20 @@
 **End-user how-to (login, products, categories, inquiries):**  
 → **[docs/ADMIN-USER-GUIDE.md](docs/ADMIN-USER-GUIDE.md)**
 
+**Production hosting:** VPS (Nginx + PM2 + Next.js) — see [docs/DEPLOYMENT-ARCHITECTURE.md](docs/DEPLOYMENT-ARCHITECTURE.md).  
+**Default database:** **MySQL** via `DATABASE_URL` (local XAMPP for dev; **existing SQL on the VPS** for production).
+
 ---
 
 ## Quick start (developers)
 
+1. Copy `.env.example` to `.env`
+2. Ensure MySQL is running and database `puller_hooks` exists (or match your `DATABASE_URL`)
+3. Set `AUTH_SECRET`, and first-time `ADMIN_SETUP_*` if seeding
+
 ```bash
 npm install
-npm run db:setup   # migrate + seed (needs ADMIN_SETUP_PASSWORD in .env the first time)
+npm run db:setup   # prisma db push + seed (needs ADMIN_SETUP_PASSWORD the first time)
 npm run dev
 ```
 
@@ -25,51 +32,20 @@ npm run dev
 5. Remove `ADMIN_SETUP_PASSWORD` from `.env` after seeding
 6. Sign in at `/management-portal` and change the password under **Settings** before production use
 
-Passwords are stored only as bcrypt hashes (local SQLite or Turso).
+Passwords are stored only as bcrypt hashes in MySQL.
 
-## Turso (free remote SQLite)
-
-When both `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set, the app uses Turso at runtime. Local `DATABASE_URL=file:./dev.db` is still used for `prisma migrate`.
+### Env (default)
 
 ```bash
-# 1) Create / migrate schema locally
-npm run db:migrate
-
-# 2) Push the same SQL to Turso
-npm run db:push:turso
-
-# 3) Seed Turso (uses Turso when env vars are set)
-# Set ADMIN_SETUP_PASSWORD in .env first
-npm run db:seed
+DATABASE_URL="mysql://root@127.0.0.1:3306/puller_hooks"
+AUTH_SECRET="generate-a-long-random-secret"
 ```
 
-## Cloudflare deploy (OpenNext Workers)
+Production uses the **same** Prisma MySQL path — point `DATABASE_URL` at the VPS’s existing MySQL database. Do not use Turso/Cloudflare as the production default.
 
-OpenNext/workerd often crashes on native Windows (`MiniflareCoreError` / access violation). Prefer WSL for local preview, or deploy with the Windows-safe script below (skips local workerd).
+## Legacy (not production default)
 
-```bash
-npx wrangler login
-npx wrangler secret put TURSO_DATABASE_URL
-npx wrangler secret put TURSO_AUTH_TOKEN
-npx wrangler secret put AUTH_SECRET
-
-# Build + upload (does not start local miniflare)
-npm run deploy
-```
-
-On Windows, preferred path:
-
-```bash
-bash scripts/wsl-deploy.sh
-bash scripts/wsl-cf-deploy.sh
-```
-
-Worker URL example: `https://fish-hook.<your-subdomain>.workers.dev`  
-Admin login: `/management-portal` on that Worker URL (not the old static Pages preview).
-
-Optional: update [VC++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) if `wrangler`/`preview` still crashes locally.
-
-**Note:** Admin image uploads write to `public/uploads` on disk. That does not persist on Cloudflare Workers — use Cloudflare R2 (or keep uploads on a Node host) for production media.
+OpenNext / Wrangler / Turso scripts remain in the repo for experiments only. **Do not** run `npm run deploy` / `cf:deploy` for pullertackle.com VPS hosting. Uploads need disk persistence on the Node host.
 
 ## Admin sections (summary)
 

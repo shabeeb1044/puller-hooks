@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE `AdminUser` (
     `id` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE `Product` (
     `layout` VARCHAR(191) NOT NULL DEFAULT 'horizontal',
     `sortOrder` INTEGER NOT NULL DEFAULT 0,
     `ctaLabel` VARCHAR(191) NULL DEFAULT 'Inquiry now',
-    `ctaHref` TEXT NULL DEFAULT '/dealers#apply',
+    `ctaHref` VARCHAR(500) NULL DEFAULT '/dealers#apply',
     `searchTerms` TEXT NULL,
     `categoryId` VARCHAR(191) NOT NULL,
     `subcategoryId` VARCHAR(191) NULL,

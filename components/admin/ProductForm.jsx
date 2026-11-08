@@ -28,8 +28,10 @@ function normalizeUrl(value) {
   return trimmed || '#';
 }
 
-export default function ProductForm({ productId }) {
+export default function ProductForm({ productId, mode = 'product' }) {
   const router = useRouter();
+  const isModelMode = mode === 'model';
+  const listBase = isModelMode ? '/admin/models' : '/admin/products';
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [error, setError] = useState('');
@@ -44,15 +46,19 @@ export default function ProductForm({ productId }) {
     image: '',
     imageAlt: '',
     status: 'draft',
-    layout: 'horizontal',
+    layout: isModelMode ? 'vertical' : 'horizontal',
     imageStyle: 'contain',
     sortOrder: 0,
     ctaLabel: 'Inquiry now',
-    ctaHref: '/dealers#apply',
+    ctaHref: isModelMode ? '#' : '/dealers#apply',
     searchTerms: '',
     categoryId: '',
     subcategoryId: '',
   });
+
+  function listHref(categoryId) {
+    return categoryId ? `${listBase}?categoryId=${categoryId}` : listBase;
+  }
 
   useEffect(() => {
     fetch('/api/admin/categories')
@@ -60,26 +66,17 @@ export default function ProductForm({ productId }) {
       .then((d) => setCategories(d.categories || []));
   }, []);
 
-  // Prefill category / subcategory / layout from Manage products / new URL query
+  // Prefill category / subcategory from URL query (layout is locked by mode)
   useEffect(() => {
     if (productId || typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const categoryId = params.get('categoryId') || '';
     const subcategoryId = params.get('subcategoryId') || '';
-    const layout = params.get('layout') === 'vertical' ? 'vertical' : '';
-    if (!categoryId && !subcategoryId && !layout) return;
+    if (!categoryId && !subcategoryId) return;
     setForm((prev) => ({
       ...prev,
       ...(categoryId ? { categoryId } : {}),
       ...(subcategoryId ? { subcategoryId } : {}),
-      ...(layout
-        ? {
-            layout: 'vertical',
-            ctaHref: '#',
-            image: '',
-            imageAlt: '',
-          }
-        : {}),
     }));
   }, [productId]);
 
@@ -90,7 +87,7 @@ export default function ProductForm({ productId }) {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed to load');
         const p = d.product;
-        const isVertical = p.layout === 'vertical';
+        const isVertical = isModelMode || p.layout === 'vertical';
         setForm({
           name: p.name || '',
           slug: p.slug || '',
@@ -100,7 +97,7 @@ export default function ProductForm({ productId }) {
           image: isVertical ? '' : p.image || '',
           imageAlt: isVertical ? '' : p.imageAlt || '',
           status: p.status || 'draft',
-          layout: p.layout || 'horizontal',
+          layout: isModelMode ? 'vertical' : 'horizontal',
           imageStyle: p.imageStyle === 'vertical' ? 'vertical' : 'contain',
           sortOrder: p.sortOrder ?? 0,
           ctaLabel: p.ctaLabel || 'Inquiry now',
@@ -112,7 +109,7 @@ export default function ProductForm({ productId }) {
         setSlugTouched(true);
       })
       .catch((e) => setError(e.message));
-  }, [productId]);
+  }, [productId, isModelMode]);
 
   useEffect(() => {
     if (!form.categoryId) {
@@ -144,7 +141,7 @@ export default function ProductForm({ productId }) {
     });
   }
 
-  const isNameButton = form.layout === 'vertical';
+  const isNameButton = isModelMode || form.layout === 'vertical';
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -153,6 +150,7 @@ export default function ProductForm({ productId }) {
     try {
       const payload = {
         ...form,
+        layout: isModelMode ? 'vertical' : 'horizontal',
         sortOrder: Number(form.sortOrder) || 0,
         subcategoryId: form.subcategoryId || null,
         ctaHref: normalizeUrl(form.ctaHref),
@@ -176,7 +174,7 @@ export default function ProductForm({ productId }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Save failed');
-      router.push(form.categoryId ? `/admin/products?categoryId=${form.categoryId}` : '/admin/products');
+      router.push(listHref(form.categoryId));
       router.refresh();
     } catch (err) {
       setError(err.message || 'Save failed');
@@ -191,7 +189,7 @@ export default function ProductForm({ productId }) {
 
       <div className="admin-form-row">
         <div className="admin-field">
-          <label htmlFor="name">Product name</label>
+          <label htmlFor="name">{isModelMode ? 'Model name' : 'Product name'}</label>
           <input id="name" value={form.name} onChange={(e) => setField('name', e.target.value)} required />
         </div>
         <div className="admin-field">
@@ -241,15 +239,11 @@ export default function ProductForm({ productId }) {
           </select>
         </div>
         <div className="admin-field">
-          <label htmlFor="layout">Display layout</label>
-          <select id="layout" value={form.layout} onChange={(e) => setField('layout', e.target.value)}>
-            <option value="horizontal">Image card</option>
-            <option value="vertical">Name button (red bar)</option>
-          </select>
-          <p className="hint">
-            {isNameButton
-              ? 'Shows as a red text option (no image). On subcategory pages this is Section 02 — Available Models; on category pages it is a name button in Products.'
-              : 'Shows as an image card with CTA (Section 03 — Products).'}
+          <label>Type</label>
+          <p className="hint" style={{ marginTop: '0.55rem' }}>
+            {isModelMode
+              ? 'Model — name button (red bar). Shows in Available Models on subcategory pages.'
+              : 'Product — image card with CTA (Section 03 — Products).'}
           </p>
         </div>
       </div>
@@ -277,9 +271,19 @@ export default function ProductForm({ productId }) {
         <fieldset className="admin-form-section">
           <legend>Name button</legend>
           <p className="admin-form-section-desc">
-            Model / name option — text only, no image. Optional URL; leave blank for #.
+            Shows the full product name in white, plus an optional Inquiry now link. No image.
           </p>
           <div className="admin-form-row">
+            <div className="admin-field">
+              <label htmlFor="ctaLabel">Inquiry label</label>
+              <input
+                id="ctaLabel"
+                value={form.ctaLabel}
+                onChange={(e) => setField('ctaLabel', e.target.value)}
+                placeholder="Inquiry now"
+              />
+              <p className="hint">Button text under the model name (default: Inquiry now).</p>
+            </div>
             <div className="admin-field">
               <label htmlFor="ctaHref">URL</label>
               <input
@@ -290,6 +294,8 @@ export default function ProductForm({ productId }) {
               />
               <p className="hint">Leave blank to use # (no link destination).</p>
             </div>
+          </div>
+          <div className="admin-form-row">
             <div className="admin-field">
               <label htmlFor="sortOrder">Sort order</label>
               <input id="sortOrder" type="number" value={form.sortOrder} onChange={(e) => setField('sortOrder', e.target.value)} />
@@ -347,14 +353,20 @@ export default function ProductForm({ productId }) {
 
       <div className="admin-actions">
         <button className="admin-btn" type="submit" disabled={saving}>
-          {saving ? 'Saving…' : productId ? 'Update product' : 'Create product'}
+          {saving
+            ? 'Saving…'
+            : productId
+              ? isModelMode
+                ? 'Update model'
+                : 'Update product'
+              : isModelMode
+                ? 'Create model'
+                : 'Create product'}
         </button>
         <button
           className="admin-btn admin-btn-ghost"
           type="button"
-          onClick={() =>
-            router.push(form.categoryId ? `/admin/products?categoryId=${form.categoryId}` : '/admin/products')
-          }
+          onClick={() => router.push(listHref(form.categoryId))}
         >
           Cancel
         </button>

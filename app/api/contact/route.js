@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { jsonError, jsonOk, readJson } from '@/lib/api';
+import { notifySalesOfSubmission } from '@/lib/mail';
+import { appendSubmissionToSheet } from '@/lib/googleSheet';
 
 const schema = z.object({
   name: z.string().min(1).max(200),
@@ -24,19 +26,40 @@ export async function POST(request) {
     return jsonError(parsed.error.issues[0]?.message || 'Invalid form data.', 400);
   }
 
+  const data = {
+    name: parsed.data.name.trim(),
+    email: parsed.data.email.trim().toLowerCase(),
+    company: parsed.data.company?.trim() || null,
+    topic: parsed.data.topic?.trim() || null,
+    country: parsed.data.country?.trim() || null,
+    phone: parsed.data.phone?.trim() || null,
+    whatsapp: parsed.data.whatsapp?.trim() || null,
+    message: parsed.data.message.trim(),
+  };
+
   const inquiry = await prisma.contactInquiry.create({
     data: {
-      name: parsed.data.name.trim(),
-      email: parsed.data.email.trim().toLowerCase(),
-      company: parsed.data.company?.trim() || null,
-      topic: parsed.data.topic?.trim() || null,
-      country: parsed.data.country?.trim() || null,
-      phone: parsed.data.phone?.trim() || null,
-      whatsapp: parsed.data.whatsapp?.trim() || null,
-      message: parsed.data.message.trim(),
+      ...data,
       status: 'new',
     },
   });
+
+  const fields = {
+    Name: data.name,
+    Email: data.email,
+    Company: data.company,
+    Topic: data.topic,
+    Country: data.country,
+    Phone: data.phone,
+    WhatsApp: data.whatsapp,
+    Message: data.message,
+    'Inquiry ID': inquiry.id,
+  };
+
+  await Promise.all([
+    notifySalesOfSubmission({ type: 'contact', replyTo: data.email, fields }),
+    appendSubmissionToSheet({ type: 'contact', fields }),
+  ]);
 
   return jsonOk({ ok: true, id: inquiry.id }, { status: 201 });
 }

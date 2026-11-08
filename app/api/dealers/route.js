@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { jsonError, jsonOk, readJson } from '@/lib/api';
+import { notifySalesOfSubmission } from '@/lib/mail';
+import { appendSubmissionToSheet } from '@/lib/googleSheet';
 
 const schema = z.object({
   company: z.string().min(1).max(200),
@@ -42,24 +44,50 @@ export async function POST(request) {
     return jsonError(parsed.error.issues[0]?.message || 'Invalid form data.', 400);
   }
 
+  const data = {
+    company: parsed.data.company.trim(),
+    name: parsed.data.name.trim(),
+    email: parsed.data.email.trim().toLowerCase(),
+    businessType: parsed.data.businessType?.trim() || null,
+    country: parsed.data.country?.trim() || null,
+    phone: parsed.data.phone?.trim() || null,
+    whatsapp: parsed.data.whatsapp?.trim() || null,
+    address: parsed.data.address?.trim() || null,
+    postalCode: parsed.data.postalCode?.trim() || null,
+    city: parsed.data.city?.trim() || null,
+    website: parsed.data.website?.trim() || null,
+    interest: parsed.data.interest?.trim() || null,
+    message: parsed.data.message?.trim() || null,
+  };
+
   const inquiry = await prisma.dealerInquiry.create({
     data: {
-      company: parsed.data.company.trim(),
-      name: parsed.data.name.trim(),
-      email: parsed.data.email.trim().toLowerCase(),
-      businessType: parsed.data.businessType?.trim() || null,
-      country: parsed.data.country?.trim() || null,
-      phone: parsed.data.phone?.trim() || null,
-      whatsapp: parsed.data.whatsapp?.trim() || null,
-      address: parsed.data.address?.trim() || null,
-      postalCode: parsed.data.postalCode?.trim() || null,
-      city: parsed.data.city?.trim() || null,
-      website: parsed.data.website?.trim() || null,
-      interest: parsed.data.interest?.trim() || null,
-      message: parsed.data.message?.trim() || null,
+      ...data,
       status: 'new',
     },
   });
+
+  const fields = {
+    Company: data.company,
+    Name: data.name,
+    Email: data.email,
+    'Business type': data.businessType,
+    Country: data.country,
+    Phone: data.phone,
+    WhatsApp: data.whatsapp,
+    Address: data.address,
+    'Postal code': data.postalCode,
+    City: data.city,
+    Website: data.website,
+    Interest: data.interest,
+    Message: data.message,
+    'Inquiry ID': inquiry.id,
+  };
+
+  await Promise.all([
+    notifySalesOfSubmission({ type: 'dealer', replyTo: data.email, fields }),
+    appendSubmissionToSheet({ type: 'dealer', fields }),
+  ]);
 
   return jsonOk({ ok: true, id: inquiry.id }, { status: 201 });
 }

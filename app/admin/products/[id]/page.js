@@ -11,7 +11,7 @@ export default async function EditProductPage({ params }) {
         </div>
       </div>
       <div className="admin-panel">
-        <ProductForm productId={id} />
+        <ProductForm productId={id} mode="product" />
       </div>
     </>
   );

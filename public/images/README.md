@@ -14,6 +14,8 @@ Photography and the logo are WebP. Favicons and home-screen icons stay PNG, whic
 | product-jigs.webp | Jigs |
 | story-fish.webp | Story section artwork |
 | footer-bg.webp / footer-bg-mobile.webp | Footer background |
+| 404-hook.webp / 404-hook.svg | 404 Error page hero artwork |
+| 404-hero-banner.webp | 404 Error page underwater background banner |
 | og-image.webp | Social share image |
 | favicon-16.png, favicon-32.png | Browser tab |
 | apple-touch-icon.png | iOS home screen |

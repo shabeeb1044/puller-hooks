@@ -24,9 +24,17 @@
     "@libsql/client": "0.8.1",
     "@prisma/adapter-libsql": "5.22.0",
     "@prisma/client": "^5.22.0",
+    "@tiptap/extension-color": "^3.33.0",
+    "@tiptap/extension-link": "^3.33.0",
+    "@tiptap/extension-text-style": "^3.33.0",
+    "@tiptap/extension-underline": "^3.33.0",
+    "@tiptap/react": "^3.33.0",
+    "@tiptap/starter-kit": "^3.33.0",
     "bcryptjs": "^3.0.3",
+    "isomorphic-dompurify": "^4.7.0",
     "jose": "^6.2.14",
     "next": "^15.5.4",
+    "nodemailer": "^10.4.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "uuid": "^14.0.3",
@@ -34,7 +42,11 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.20.15",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "prisma": "^5.22.0",
+    "typescript": "^5.9.3",
     "wrangler": "^4.156.0"
   }
 }

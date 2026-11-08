@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import RichHTML from '@/components/RichHTML';
 
 function IconClose() {
   return (
@@ -56,6 +57,8 @@ export default function ProductCatalog({
   eyebrow = null,
   title = null,
   lead = null,
+  /** When true, render only the product grid (no outer section/container). */
+  embedded = false,
 }) {
   const [query, setQuery] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -242,86 +245,97 @@ export default function ProductCatalog({
         </div>
       ) : null}
 
-      <section
-        className={`catalog${yellow ? ' catalog--yellow' : ''}`}
-        id="catalog"
-        aria-labelledby={title ? 'catalog-title' : undefined}
-        aria-label={title ? undefined : 'Product listing'}
-      >
-        <div className="container">
-          {(eyebrow || title || lead) && (
-            <header className="range-head reveal">
-              {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
-              {title ? (
-                <h2 id="catalog-title" className="section-title">
-                  {title}
-                </h2>
-              ) : null}
-              {lead ? <p>{lead}</p> : null}
-            </header>
-          )}
-          {horizontal.length > 0 ? (
-            <div className="catalog-grid" id="catalogGrid">
-              {horizontal.map((product, index) => {
-                const style = product.imageStyle === 'vertical' ? 'vertical' : 'contain';
-                return (
-                  <article
-                    key={product.id}
-                    className={`catalog-card catalog-card--${style}`}
-                    data-search={product.searchTerms || product.name}
-                  >
-                    <button
-                      type="button"
-                      className="catalog-media"
-                      aria-label={`View ${product.name} larger`}
-                      onClick={() => setLightboxIndex(index)}
+      {(() => {
+        const grid = (
+          <>
+            {(eyebrow || title || lead) && !embedded ? (
+              <header className="range-head reveal">
+                {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
+                {title ? (
+                  <RichHTML id="catalog-title" as="h2" className="section-title" html={title} inline />
+                ) : null}
+                <RichHTML className="range-lead" html={lead} />
+              </header>
+            ) : null}
+            {horizontal.length > 0 ? (
+              <div className="catalog-grid" id={embedded ? undefined : 'catalogGrid'}>
+                {horizontal.map((product, index) => {
+                  const style = product.imageStyle === 'vertical' ? 'vertical' : 'contain';
+                  return (
+                    <article
+                      key={product.id}
+                      id={product.slug ? `product-${product.slug}` : undefined}
+                      className={`catalog-card catalog-card--${style}`}
+                      data-search={product.searchTerms || product.name}
                     >
-                      {product.image ? (
-                        <img
-                          src={product.image}
-                          alt={product.imageAlt || product.name}
-                          width={product.imageStyle === 'vertical' ? 120 : 640}
-                          height={product.imageHeight || (product.imageStyle === 'vertical' ? 380 : 640)}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : null}
-                    </button>
-                    <div className="catalog-info">
-                      <span className="catalog-name">{product.name}</span>
-                      <a
-                        className="catalog-btn"
-                        href={product.ctaHref || '/dealers#apply'}
+                      <button
+                        type="button"
+                        className="catalog-media"
+                        aria-label={`View ${product.name} larger`}
+                        onClick={() => setLightboxIndex(index)}
                       >
-                        {product.ctaLabel || 'Inquiry now'} <IconArrow />
-                      </a>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : null}
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.imageAlt || product.name}
+                            width={product.imageStyle === 'vertical' ? 120 : 640}
+                            height={product.imageHeight || (product.imageStyle === 'vertical' ? 380 : 640)}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : null}
+                      </button>
+                      <div className="catalog-info">
+                        <span className="catalog-name">{product.name}</span>
+                        <a
+                          className="catalog-btn"
+                          href={product.ctaHref || '/dealers#apply'}
+                        >
+                          {product.ctaLabel || 'Inquiry now'} <IconArrow />
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : null}
 
-          {vertical.length > 0 ? (
-            <div className="hook-groups" style={{ marginTop: horizontal.length ? '2rem' : 0 }}>
-              <div className="hook-group reveal">
-                <div className="hook-grid">
-                  {vertical.map((product) => (
-                    <a key={product.id} className="hook-item" href={product.ctaHref || '#'}>
-                      <span>{product.name}</span>
-                      <IconArrow />
-                    </a>
-                  ))}
+            {vertical.length > 0 ? (
+              <div className="hook-groups" style={{ marginTop: horizontal.length ? '2rem' : 0 }}>
+                <div className="hook-group reveal">
+                  <div className="hook-grid">
+                    {vertical.map((product) => (
+                      <a key={product.id} className="hook-item" href={product.ctaHref || '#'}>
+                        <span>{product.name}</span>
+                        <IconArrow />
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          <p className="catalog-empty" id="catalogEmpty" hidden={filtered.length > 0}>
-            No matching products.
-          </p>
-        </div>
-      </section>
+            <p className="catalog-empty" id={embedded ? undefined : 'catalogEmpty'} hidden={filtered.length > 0}>
+              No matching products.
+            </p>
+          </>
+        );
+
+        if (embedded) {
+          return <div className={`catalog catalog--embedded${yellow ? ' catalog--yellow' : ''}`}>{grid}</div>;
+        }
+
+        return (
+          <section
+            className={`catalog${yellow ? ' catalog--yellow' : ''}`}
+            id="catalog"
+            aria-labelledby={title ? 'catalog-title' : undefined}
+            aria-label={title ? undefined : 'Product listing'}
+          >
+            <div className="container">{grid}</div>
+          </section>
+        );
+      })()}
 
       {lightbox}
     </>

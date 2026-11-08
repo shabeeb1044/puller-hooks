@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageField from './ImageField';
 import MenuLinkFields from './MenuLinkFields';
+import RichTextField from './RichTextField';
+import ToggleSwitch from './ToggleSwitch';
 import { menuLinkPayload, normalizeMenuLinkType } from '@/lib/menuLinks';
 import { parseJsonResponse } from '@/lib/parseJsonResponse';
 
@@ -73,6 +75,9 @@ const emptyForm = {
   bannerTheme: 'black',
   modelsTheme: 'black',
   productsTheme: 'black',
+  bannerVisible: true,
+  modelsVisible: true,
+  productsVisible: true,
 };
 
 export default function SubcategoryForm({ subcategoryId }) {
@@ -123,6 +128,9 @@ export default function SubcategoryForm({ subcategoryId }) {
           bannerTheme: normalizeTheme(s.bannerTheme),
           modelsTheme: normalizeTheme(s.modelsTheme),
           productsTheme: normalizeTheme(s.productsTheme),
+          bannerVisible: s.bannerVisible !== false,
+          modelsVisible: s.modelsVisible !== false,
+          productsVisible: s.productsVisible !== false,
         });
         setError('');
         setSlugTouched(true);
@@ -136,12 +144,13 @@ export default function SubcategoryForm({ subcategoryId }) {
       setProductCount(null);
       return;
     }
-    fetch(`/api/admin/products?subcategoryId=${encodeURIComponent(subcategoryId)}&limit=200`)
-      .then((r) => r.json())
-      .then((d) => {
-        const list = d.products || [];
-        setModelCount(list.filter((p) => p.layout === 'vertical' || !p.image).length);
-        setProductCount(list.filter((p) => p.layout !== 'vertical' && p.image).length);
+    Promise.all([
+      fetch(`/api/admin/products?subcategoryId=${encodeURIComponent(subcategoryId)}&layout=vertical`).then((r) => r.json()),
+      fetch(`/api/admin/products?subcategoryId=${encodeURIComponent(subcategoryId)}&layout=horizontal`).then((r) => r.json()),
+    ])
+      .then(([models, products]) => {
+        setModelCount((models.products || []).length);
+        setProductCount((products.products || []).length);
       })
       .catch(() => {
         setModelCount(null);
@@ -229,11 +238,15 @@ export default function SubcategoryForm({ subcategoryId }) {
             <label htmlFor="sortOrder">Sort order</label>
             <input id="sortOrder" type="number" value={form.sortOrder} onChange={(e) => setField('sortOrder', e.target.value)} />
           </div>
-          <div className="admin-field admin-field-check">
-            <label>
-              <input type="checkbox" checked={form.visible} onChange={(e) => setField('visible', e.target.checked)} /> Visible in
-              navigation
-            </label>
+          <div className="admin-field">
+            <ToggleSwitch
+              name="visible"
+              checked={form.visible}
+              onChange={(v) => setField('visible', v)}
+              label="Visible in navigation"
+              onLabel="Shown"
+              offLabel="Hidden"
+            />
           </div>
         </div>
         <MenuLinkFields
@@ -248,6 +261,14 @@ export default function SubcategoryForm({ subcategoryId }) {
       <fieldset className="admin-form-section">
         <legend>Section 01 — Banner</legend>
         <p className="admin-form-section-desc">Breadcrumb / hero block: subtitle, heading, and description.</p>
+        <ToggleSwitch
+          name="bannerVisible"
+          checked={form.bannerVisible !== false}
+          onChange={(v) => setField('bannerVisible', v)}
+          label="Show on website"
+          onLabel="Shown"
+          offLabel="Hidden"
+        />
         <ThemePicker value={form.bannerTheme} onChange={(v) => setField('bannerTheme', v)} name="bannerTheme" />
         <div className="admin-field">
           <label htmlFor="pageSubtitle">Subtitle</label>
@@ -258,14 +279,19 @@ export default function SubcategoryForm({ subcategoryId }) {
             placeholder="PULLER Lures"
           />
         </div>
-        <div className="admin-field">
-          <label htmlFor="pageTitle">Heading</label>
-          <input id="pageTitle" value={form.pageTitle} onChange={(e) => setField('pageTitle', e.target.value)} />
-        </div>
-        <div className="admin-field">
-          <label htmlFor="pageLead">Description</label>
-          <textarea id="pageLead" rows={3} value={form.pageLead} onChange={(e) => setField('pageLead', e.target.value)} />
-        </div>
+        <RichTextField
+          label="Heading"
+          value={form.pageTitle}
+          onChange={(html) => setField('pageTitle', html)}
+          compact
+          minHeight={48}
+        />
+        <RichTextField
+          label="Description"
+          value={form.pageLead}
+          onChange={(html) => setField('pageLead', html)}
+          minHeight={140}
+        />
         <ImageField label="Background image" name="bannerImage" value={form.bannerImage} onChange={(v) => setField('bannerImage', v)} />
         <p className="hint">Background image is used on Black theme. Yellow theme uses the solid logo yellow.</p>
       </fieldset>
@@ -275,6 +301,14 @@ export default function SubcategoryForm({ subcategoryId }) {
         <p className="admin-form-section-desc">
           Subtitle, title, description, then model options as red text cards. No images in this section.
         </p>
+        <ToggleSwitch
+          name="modelsVisible"
+          checked={form.modelsVisible !== false}
+          onChange={(v) => setField('modelsVisible', v)}
+          label="Show on website"
+          onLabel="Shown"
+          offLabel="Hidden"
+        />
         <ThemePicker value={form.modelsTheme} onChange={(v) => setField('modelsTheme', v)} name="modelsTheme" />
         <div className="admin-field">
           <label htmlFor="modelsSubtitle">Subtitle</label>
@@ -285,25 +319,19 @@ export default function SubcategoryForm({ subcategoryId }) {
             placeholder="Available Models"
           />
         </div>
-        <div className="admin-field">
-          <label htmlFor="modelsTitle">Heading</label>
-          <input
-            id="modelsTitle"
-            value={form.modelsTitle}
-            onChange={(e) => setField('modelsTitle', e.target.value)}
-            placeholder="Seven sizes. One series."
-          />
-        </div>
-        <div className="admin-field">
-          <label htmlFor="modelsLead">Description</label>
-          <textarea
-            id="modelsLead"
-            rows={3}
-            value={form.modelsLead}
-            onChange={(e) => setField('modelsLead', e.target.value)}
-            placeholder="Choose the size that matches your water, target species and technique…"
-          />
-        </div>
+        <RichTextField
+          label="Heading"
+          value={form.modelsTitle}
+          onChange={(html) => setField('modelsTitle', html)}
+          compact
+          minHeight={48}
+        />
+        <RichTextField
+          label="Description"
+          value={form.modelsLead}
+          onChange={(html) => setField('modelsLead', html)}
+          minHeight={140}
+        />
         {subcategoryId ? (
           <div className="admin-form-section-note">
             <p>
@@ -314,29 +342,37 @@ export default function SubcategoryForm({ subcategoryId }) {
             <div className="admin-actions" style={{ margin: 0 }}>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/products/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}&layout=vertical`}
+                href={`/admin/models/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
               >
-                Add model option
+                Add model
               </a>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/products?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+                href={`/admin/models?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
               >
-                Manage products
+                Manage models
               </a>
             </div>
             <p className="hint" style={{ marginTop: '0.75rem' }}>
-              Model options use product name + optional URL only. No image upload.
+              Models use name + optional URL only. No image upload.
             </p>
           </div>
         ) : (
-          <p className="hint">Save the subcategory first, then add model options under Products (name button layout).</p>
+          <p className="hint">Save the subcategory first, then add models under Models.</p>
         )}
       </fieldset>
 
       <fieldset className="admin-form-section">
         <legend>Section 03 — Products</legend>
         <p className="admin-form-section-desc">Image product cards / colour patterns catalog.</p>
+        <ToggleSwitch
+          name="productsVisible"
+          checked={form.productsVisible !== false}
+          onChange={(v) => setField('productsVisible', v)}
+          label="Show on website"
+          onLabel="Shown"
+          offLabel="Hidden"
+        />
         <ThemePicker
           label="Section background (Yellow or Black)"
           value={form.productsTheme}
@@ -352,24 +388,19 @@ export default function SubcategoryForm({ subcategoryId }) {
             placeholder="Colour Patterns"
           />
         </div>
-        <div className="admin-field">
-          <label htmlFor="productsTitle">Heading</label>
-          <input
-            id="productsTitle"
-            value={form.productsTitle}
-            onChange={(e) => setField('productsTitle', e.target.value)}
-            placeholder={form.name || 'Products'}
-          />
-        </div>
-        <div className="admin-field">
-          <label htmlFor="productsLead">Description</label>
-          <textarea
-            id="productsLead"
-            rows={3}
-            value={form.productsLead}
-            onChange={(e) => setField('productsLead', e.target.value)}
-          />
-        </div>
+        <RichTextField
+          label="Heading"
+          value={form.productsTitle}
+          onChange={(html) => setField('productsTitle', html)}
+          compact
+          minHeight={48}
+        />
+        <RichTextField
+          label="Description"
+          value={form.productsLead}
+          onChange={(html) => setField('productsLead', html)}
+          minHeight={140}
+        />
         {subcategoryId ? (
           <div className="admin-form-section-note">
             <p>

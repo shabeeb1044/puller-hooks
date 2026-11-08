@@ -21,7 +21,7 @@ export default function MenuLinkFields({
   useEffect(() => {
     if (type !== 'product') return;
     setLoadingProducts(true);
-    fetch('/api/admin/products')
+    fetch('/api/admin/products?layout=horizontal')
       .then((r) => r.json())
       .then((d) => setProducts(d.products || []))
       .catch(() => setProducts([]))
@@ -95,13 +95,12 @@ export default function MenuLinkFields({
             id="menuAnchor"
             value={menuAnchor || ''}
             onChange={(e) => onChange({ menuAnchor: e.target.value })}
-            placeholder="card-metal  or  /contact  or  https://…"
-            required
+            placeholder="#  or  card-metal  or  /contact"
           />
           <p className="hint">
-            Full URL, site path (<code>/contact</code>), <code>#card-metal</code>, or bare id{' '}
-            <code>card-metal</code> (auto-links to home section). Menu label stays the category /
-            subcategory name above.
+            Use <code>#</code> or leave blank for no navigation (dropdown parents like Hard Body
+            Lures). Or full URL, site path (<code>/contact</code>), <code>#card-metal</code>, or bare
+            id <code>card-metal</code> (home section).
           </p>
         </div>
       ) : null}

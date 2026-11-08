@@ -156,6 +156,25 @@
   padding-top: 0.85rem;
 }
 
+.admin-sheet-link {
+  display: block;
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  background: var(--ab-nav-active-bg);
+  color: var(--ab-nav-active);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.admin-sheet-link:hover {
+  filter: brightness(0.97);
+}
+
 .admin-main {
   background: var(--ab-bg);
   padding: 1.5rem 1.75rem 2.5rem;
@@ -520,6 +539,108 @@
   margin: 0;
 }
 
+/* Form toggle switch (Show / Hide) */
+.admin-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0 0 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.admin-switch-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.admin-switch-track {
+  display: block;
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: #c5cad3;
+  border: 1px solid color-mix(in srgb, var(--ab-input-border) 80%, #9aa0a8);
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.admin-body.dark-mode .admin-switch-track {
+  background: #3a3f48;
+  border-color: #4b5160;
+}
+
+.admin-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+  transition: transform 0.22s ease, background 0.22s ease;
+}
+
+.admin-switch.is-on .admin-switch-track {
+  background: var(--admin-yellow, #f7ed22);
+  border-color: color-mix(in srgb, var(--admin-yellow, #f7ed22) 70%, #111);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.06),
+    0 0 0 3px color-mix(in srgb, var(--admin-yellow, #f7ed22) 22%, transparent);
+}
+
+.admin-switch.is-on .admin-switch-thumb {
+  transform: translateX(20px);
+  background: #111;
+}
+
+.admin-switch-input:focus-visible + .admin-switch-track {
+  outline: 2px solid var(--admin-red, #d81e37);
+  outline-offset: 2px;
+}
+
+.admin-switch:hover .admin-switch-track {
+  filter: brightness(0.98);
+}
+
+.admin-switch-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.admin-switch-label {
+  color: var(--ab-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.admin-switch-state {
+  color: var(--ab-text-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-switch.is-on .admin-switch-state {
+  color: #9a8600;
+}
+
+.admin-body.dark-mode .admin-switch.is-on .admin-switch-state {
+  color: var(--admin-yellow, #f7ed22);
+}
+
 .admin-radio-row {
   display: flex;
   flex-wrap: wrap;
@@ -552,6 +673,17 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+/* ToggleSwitch root is a <label>; don't apply field-label styles to it */
+.admin-field label.admin-switch {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  color: inherit;
+  font-size: inherit;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .admin-field .hint {
@@ -763,4 +895,191 @@
   .admin-modal dl {
     grid-template-columns: 1fr;
   }
+}
+
+/* Rich text editor (Tiptap) — mockup-style toolbar */
+.admin-rte-shell {
+  border: 1px solid var(--ab-input-border);
+  border-radius: 10px;
+  background: var(--ab-input-bg);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.admin-rte-shell:focus-within {
+  border-color: #c9ced6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.admin-rte-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid var(--ab-input-border);
+  background: #f7f8fa;
+}
+
+.admin-body.dark-mode .admin-rte-toolbar {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-rte-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.85rem;
+  height: 1.85rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ab-text);
+  border-radius: 6px;
+  padding: 0 0.4rem;
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-rte-btn .admin-rte-u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-rte-btn:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.admin-rte-btn.is-active {
+  background: #e8eefc;
+  border-color: #c5d4f5;
+  color: #1d4ed8;
+}
+
+.admin-body.dark-mode .admin-rte-btn.is-active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+}
+
+.admin-rte-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.2rem 0.35rem;
+  background: var(--ab-input-border);
+}
+
+.admin-rte-color-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ab-text-soft);
+  margin: 0 0.15rem 0 0.1rem;
+}
+
+.admin-rte-color-btn {
+  padding: 0.15rem !important;
+}
+
+.admin-rte-swatch {
+  display: block;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.admin-rte-swatch--white {
+  border-color: #bbb;
+}
+
+.admin-rte-swatch--black {
+  border-color: #333;
+}
+
+.admin-rte-btn.is-active .admin-rte-swatch {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.admin-rte .ProseMirror {
+  outline: none;
+  padding: 0.85rem 0.9rem;
+  color: var(--ab-text);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  min-width: 0;
+}
+
+/* Normal professional paragraph spacing (like a default text editor) */
+.admin-rte .ProseMirror p {
+  margin: 0 0 0.75em;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.admin-rte .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.admin-rte .ProseMirror h2 {
+  margin: 1em 0 0.45em;
+  font-size: 1.2em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.admin-rte .ProseMirror h3 {
+  margin: 0.85em 0 0.35em;
+  font-size: 1.05em;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.admin-rte .ProseMirror h2:first-child,
+.admin-rte .ProseMirror h3:first-child {
+  margin-top: 0;
+}
+
+.admin-rte .ProseMirror ul,
+.admin-rte .ProseMirror ol {
+  margin: 0 0 0.75em;
+  padding-left: 1.35rem;
+}
+
+.admin-rte .ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.admin-rte .ProseMirror blockquote {
+  margin: 0.75em 0;
+  padding: 0.65rem 0.85rem;
+  border-left: 3px solid #3b82f6;
+  background: #eff6ff;
+  border-radius: 0 6px 6px 0;
+  color: inherit;
+}
+
+.admin-body.dark-mode .admin-rte .ProseMirror blockquote {
+  background: rgba(59, 130, 246, 0.12);
+  border-left-color: #60a5fa;
+}
+
+.admin-rte-content--compact.ProseMirror p {
+  margin: 0;
+}
+
+.admin-rte .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--ab-text-soft);
+  pointer-events: none;
+  height: 0;
 }

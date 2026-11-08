@@ -40,11 +40,13 @@ export async function GET(request) {
     const status = searchParams.get('status') || '';
     const categoryId = searchParams.get('categoryId') || '';
     const subcategoryId = searchParams.get('subcategoryId') || '';
+    const layout = searchParams.get('layout') || '';
 
     const where = {};
     if (status) where.status = status;
     if (categoryId) where.categoryId = categoryId;
     if (subcategoryId) where.subcategoryId = subcategoryId;
+    if (layout === 'vertical' || layout === 'horizontal') where.layout = layout;
     if (q) {
       where.OR = [
         { name: { contains: q } },

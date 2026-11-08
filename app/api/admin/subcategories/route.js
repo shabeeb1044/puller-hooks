@@ -28,6 +28,9 @@ const schema = z.object({
   bannerTheme: z.enum(['yellow', 'black']).optional(),
   modelsTheme: z.enum(['yellow', 'black']).optional(),
   productsTheme: z.enum(['yellow', 'black']).optional(),
+  bannerVisible: z.boolean().optional(),
+  modelsVisible: z.boolean().optional(),
+  productsVisible: z.boolean().optional(),
 });
 
 export async function GET(request) {
@@ -83,6 +86,9 @@ export async function POST(request) {
           bannerTheme: data.bannerTheme || 'black',
           modelsTheme: data.modelsTheme || 'black',
           productsTheme: data.productsTheme || 'black',
+          bannerVisible: data.bannerVisible !== false,
+          modelsVisible: data.modelsVisible !== false,
+          productsVisible: data.productsVisible !== false,
         },
         include: { category: true },
       });

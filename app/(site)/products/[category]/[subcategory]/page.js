@@ -27,12 +27,5 @@ export default async function DynamicSubcategoryPage({ params }) {
   );
   if (!category || !subcategory) notFound();
 
-  return (
-    <CategoryPage
-      category={category}
-      subcategory={subcategory}
-      products={products}
-      bannerVariant={subcategory.slug === 'flash-striker' ? 'yellow' : 'default'}
-    />
-  );
+  return <CategoryPage category={category} subcategory={subcategory} products={products} />;
 }

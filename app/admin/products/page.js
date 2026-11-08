@@ -16,8 +16,11 @@ export default function AdminProductsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get('categoryId') || '';
-    if (fromUrl) setCategoryId(fromUrl);
+    const params = new URLSearchParams(window.location.search);
+    const fromCategory = params.get('categoryId') || '';
+    const fromSubcategory = params.get('subcategoryId') || '';
+    if (fromCategory) setCategoryId(fromCategory);
+    if (fromSubcategory) setSubcategoryId(fromSubcategory);
   }, []);
 
   useEffect(() => {
@@ -30,18 +33,17 @@ export default function AdminProductsPage() {
   useEffect(() => {
     if (!categoryId) {
       setSubcategories([]);
-      setSubcategoryId('');
       return;
     }
     fetch(`/api/admin/subcategories?categoryId=${categoryId}`)
       .then((r) => r.json())
       .then((d) => setSubcategories(d.subcategories || []))
       .catch(() => setSubcategories([]));
-    setSubcategoryId('');
   }, [categoryId]);
 
   const load = useCallback(async () => {
     const params = new URLSearchParams();
+    params.set('layout', 'horizontal');
     if (q) params.set('q', q);
     if (status) params.set('status', status);
     if (categoryId) params.set('categoryId', categoryId);
@@ -80,22 +82,18 @@ export default function AdminProductsPage() {
       <div className="admin-topbar">
         <div>
           <h1>Products</h1>
-          <p>Create, edit, publish, and reorder products. Drag rows to change display order.</p>
+          <p>Create, edit, publish, and reorder image products. Drag rows to change display order.</p>
         </div>
         <div className="admin-actions" style={{ margin: 0 }}>
           <Link
-            className="admin-btn admin-btn-ghost"
-            href={
-              categoryId
-                ? `/admin/products/new?categoryId=${categoryId}&layout=vertical`
-                : '/admin/products/new?layout=vertical'
-            }
-          >
-            Add name button
-          </Link>
-          <Link
             className="admin-btn"
-            href={categoryId ? `/admin/products/new?categoryId=${categoryId}` : '/admin/products/new'}
+            href={(() => {
+              const params = new URLSearchParams();
+              if (categoryId) params.set('categoryId', categoryId);
+              if (subcategoryId) params.set('subcategoryId', subcategoryId);
+              const qs = params.toString();
+              return qs ? `/admin/products/new?${qs}` : '/admin/products/new';
+            })()}
           >
             Add product
           </Link>
@@ -114,7 +112,10 @@ export default function AdminProductsPage() {
           />
           <select
             value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
+            onChange={(e) => {
+              setCategoryId(e.target.value);
+              setSubcategoryId('');
+            }}
             style={{ maxWidth: 220 }}
           >
             <option value="">All categories</option>
@@ -151,7 +152,7 @@ export default function AdminProductsPage() {
                   <th>Name</th>
                   <th>Category</th>
                   <th>Status</th>
-                  <th>Layout</th>
+                  <th>Image style</th>
                   <th></th>
                 </>
               );
@@ -169,11 +170,7 @@ export default function AdminProductsPage() {
                 </td>
                 <td><StatusBadge status={item.status} /></td>
                 <td>
-                  {item.layout === 'vertical' || !item.image
-                    ? 'Name button'
-                    : item.imageStyle === 'vertical'
-                      ? 'Image · Vertical'
-                      : 'Image · Contain'}
+                  {item.imageStyle === 'vertical' ? 'Vertical' : 'Contain'}
                 </td>
                 <td>
                   <div className="admin-actions">

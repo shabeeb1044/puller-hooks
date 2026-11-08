@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 const LINKS = [
   { href: '/admin', label: 'Dashboard', exact: true },
   { href: '/admin/products', label: 'Products' },
+  { href: '/admin/models', label: 'Models' },
   { href: '/admin/categories', label: 'Categories' },
   { href: '/admin/subcategories', label: 'Subcategories' },
   { href: '/admin/dealer-network', label: 'Dealer Network' },
@@ -20,7 +21,7 @@ function isActive(pathname, href, exact) {
   return pathname === href || pathname.startsWith(href + '/');
 }
 
-export default function AdminShell({ children }) {
+export default function AdminShell({ children, googleSheetUrl = '' }) {
   const pathname = usePathname();
   const router = useRouter();
   // Default = light mode. Persist preference in localStorage.
@@ -63,6 +64,16 @@ export default function AdminShell({ children }) {
               />
             </Link>
             <span>Admin CMS</span>
+            {googleSheetUrl ? (
+              <a
+                className="admin-sheet-link"
+                href={googleSheetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open Google Sheet
+              </a>
+            ) : null}
           </div>
           <nav className="admin-nav" aria-label="Admin">
             {LINKS.map((link) => (

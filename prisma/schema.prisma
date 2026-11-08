@@ -35,12 +35,20 @@ model Category {
   pageLead         String?       @db.Text // Section 01 description
   introSubtitle    String?       // Section 02 eyebrow
   introTitle       String?       // Section 02 heading
+  modelsSubtitle   String?       // Section 03 Available Models eyebrow
+  modelsTitle      String?       // Section 03 heading
+  modelsLead       String?       @db.Text // Section 03 description
   productsSubtitle String?       // Products section eyebrow
   productsTitle    String?       // Products section heading
   productsLead     String?       @db.Text // Products section description
   bannerTheme      String        @default("black") // yellow | black — Section 01
   introTheme       String        @default("black") // yellow | black — Section 02
-  productsTheme    String        @default("black") // yellow | black — Section 03
+  modelsTheme      String        @default("black") // yellow | black — Section 03
+  productsTheme    String        @default("black") // yellow | black — Section 04
+  bannerVisible    Boolean       @default(true) // Show Section 01 on website
+  introVisible     Boolean       @default(true) // Show Section 02 on website
+  modelsVisible    Boolean       @default(true) // Show Section 03 on website
+  productsVisible  Boolean       @default(true) // Show Section 04 on website
   pageTheme        String        @default("black") // legacy; prefer per-section themes
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -73,6 +81,9 @@ model Subcategory {
   bannerTheme      String    @default("black") // yellow | black — Section 01
   modelsTheme      String    @default("black") // yellow | black — Section 02
   productsTheme    String    @default("black") // yellow | black — Section 03
+  bannerVisible    Boolean   @default(true) // Show Section 01 on website
+  modelsVisible    Boolean   @default(true) // Show Section 02 on website
+  productsVisible  Boolean   @default(true) // Show Section 03 on website
   categoryId       String
   category         Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   products         Product[]
@@ -97,7 +108,7 @@ model Product {
   layout         String       @default("horizontal") // horizontal | vertical
   sortOrder      Int          @default(0)
   ctaLabel       String?      @default("Inquiry now")
-  ctaHref        String?      @default("/dealers#apply") @db.Text
+  ctaHref        String?      @default("/dealers#apply") @db.VarChar(500)
   searchTerms    String?      @db.Text
   categoryId    String
   category      Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
