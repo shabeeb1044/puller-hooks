@@ -16,7 +16,7 @@ export default async function SiteLayout({ children }) {
 
   return (
     <>
-      <link rel="stylesheet" href="/css/style.css?v=20261109-nav-label" />
+      <link rel="stylesheet" href="/css/style.css?v=20261110-range-figure" />
       <link rel="stylesheet" href="/css/flag-icons.min.css" />
       <link rel="stylesheet" href="/css/forms.css" />
       <Icons />

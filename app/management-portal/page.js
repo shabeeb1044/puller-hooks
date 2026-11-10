@@ -1,12 +1,9 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { parseJsonResponse } from '@/lib/parseJsonResponse';
 
-function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function ManagementPortalPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,9 +22,9 @@ function LoginForm() {
       const { data, error: parseError } = await parseJsonResponse(res);
       if (parseError) throw new Error(parseError);
       if (!res.ok) throw new Error(data?.error || 'Login failed');
-      const next = searchParams.get('next') || '/admin';
-      router.push(next);
-      router.refresh();
+      // Full navigation so middleware rewrites /management-portal → dashboard.
+      window.location.assign('/management-portal');
+      return;
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
@@ -68,13 +65,5 @@ function LoginForm() {
         </button>
       </form>
     </div>
-  );
-}
-
-export default function ManagementPortalPage() {
-  return (
-    <Suspense fallback={<div className="admin-login-wrap">Loading…</div>}>
-      <LoginForm />
-    </Suspense>
   );
 }

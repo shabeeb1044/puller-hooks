@@ -34,6 +34,8 @@ const schema = z.object({
   introVisible: z.boolean().optional(),
   modelsVisible: z.boolean().optional(),
   productsVisible: z.boolean().optional(),
+  bannerAlign: z.enum(['left', 'center', 'right']).optional(),
+  bannerMaxWidth: z.number().int().min(16).max(120).optional().nullable(),
   pageTheme: z.enum(['yellow', 'black']).optional(),
 });
 
@@ -91,6 +93,8 @@ export async function PUT(request, { params }) {
           introVisible: data.introVisible !== false,
           modelsVisible: data.modelsVisible !== false,
           productsVisible: data.productsVisible !== false,
+          bannerAlign: data.bannerAlign || 'left',
+          bannerMaxWidth: data.bannerMaxWidth ?? null,
           pageTheme: data.productsTheme || data.pageTheme || 'black',
         },
       });

@@ -59,7 +59,7 @@ export default function AdminCategoriesPage() {
           <h1>Categories</h1>
           <p>Manage Products menu categories, order, and visibility.</p>
         </div>
-        <Link className="admin-btn" href="/admin/categories/new">Add category</Link>
+        <Link className="admin-btn" href="/management-portal/categories/new">Add category</Link>
       </div>
       {error ? <div className="admin-error">{error}</div> : null}
       <div className="admin-panel">
@@ -101,7 +101,7 @@ export default function AdminCategoriesPage() {
                     <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/products/${item.slug}`} target="_blank">
                       View
                     </Link>
-                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/categories/${item.id}`}>Edit</Link>
+                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/management-portal/categories/${item.id}`}>Edit</Link>
                     <button type="button" className="admin-btn admin-btn-red admin-btn-sm" onClick={() => remove(item.id)}>Delete</button>
                   </div>
                 </td>

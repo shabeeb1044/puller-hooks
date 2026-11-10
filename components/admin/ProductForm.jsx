@@ -31,7 +31,7 @@ function normalizeUrl(value) {
 export default function ProductForm({ productId, mode = 'product' }) {
   const router = useRouter();
   const isModelMode = mode === 'model';
-  const listBase = isModelMode ? '/admin/models' : '/admin/products';
+  const listBase = isModelMode ? '/management-portal/models' : '/management-portal/products';
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [error, setError] = useState('');

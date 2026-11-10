@@ -92,7 +92,7 @@ export default function AdminModelsPage() {
               if (categoryId) params.set('categoryId', categoryId);
               if (subcategoryId) params.set('subcategoryId', subcategoryId);
               const qs = params.toString();
-              return qs ? `/admin/models/new?${qs}` : '/admin/models/new';
+              return qs ? `/management-portal/models/new?${qs}` : '/management-portal/models/new';
             })()}
           >
             Add model
@@ -168,7 +168,7 @@ export default function AdminModelsPage() {
                 <td><StatusBadge status={item.status} /></td>
                 <td>
                   <div className="admin-actions">
-                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/models/${item.id}`}>Edit</Link>
+                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/management-portal/models/${item.id}`}>Edit</Link>
                     <button type="button" className="admin-btn admin-btn-red admin-btn-sm" onClick={() => remove(item.id)}>Delete</button>
                   </div>
                 </td>

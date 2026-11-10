@@ -54,7 +54,7 @@ export default function AdminSubcategoriesPage() {
           <h1>Subcategories</h1>
           <p>Nest under categories for dropdown menus and product pages.</p>
         </div>
-        <Link className="admin-btn" href="/admin/subcategories/new">Add subcategory</Link>
+        <Link className="admin-btn" href="/management-portal/subcategories/new">Add subcategory</Link>
       </div>
       {error ? <div className="admin-error">{error}</div> : null}
       <div className="admin-panel">
@@ -99,7 +99,7 @@ export default function AdminSubcategoriesPage() {
                     >
                       View
                     </Link>
-                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/subcategories/${item.id}`}>Edit</Link>
+                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/management-portal/subcategories/${item.id}`}>Edit</Link>
                     <button type="button" className="admin-btn admin-btn-red admin-btn-sm" onClick={() => remove(item.id)}>Delete</button>
                   </div>
                 </td>

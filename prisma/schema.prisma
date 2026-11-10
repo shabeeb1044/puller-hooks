@@ -49,6 +49,8 @@ model Category {
   introVisible     Boolean       @default(true) // Show Section 02 on website
   modelsVisible    Boolean       @default(true) // Show Section 03 on website
   productsVisible  Boolean       @default(true) // Show Section 04 on website
+  bannerAlign      String        @default("left") // left | center | right — Section 01 content
+  bannerMaxWidth   Int?          // rem; null = CSS default (~40rem)
   pageTheme        String        @default("black") // legacy; prefer per-section themes
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -84,6 +86,8 @@ model Subcategory {
   bannerVisible    Boolean   @default(true) // Show Section 01 on website
   modelsVisible    Boolean   @default(true) // Show Section 02 on website
   productsVisible  Boolean   @default(true) // Show Section 03 on website
+  bannerAlign      String    @default("left") // left | center | right — Section 01 content
+  bannerMaxWidth   Int?      // rem; null = CSS default (~40rem)
   categoryId       String
   category         Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   products         Product[]

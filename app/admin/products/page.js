@@ -92,7 +92,7 @@ export default function AdminProductsPage() {
               if (categoryId) params.set('categoryId', categoryId);
               if (subcategoryId) params.set('subcategoryId', subcategoryId);
               const qs = params.toString();
-              return qs ? `/admin/products/new?${qs}` : '/admin/products/new';
+              return qs ? `/management-portal/products/new?${qs}` : '/management-portal/products/new';
             })()}
           >
             Add product
@@ -174,7 +174,7 @@ export default function AdminProductsPage() {
                 </td>
                 <td>
                   <div className="admin-actions">
-                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/products/${item.id}`}>Edit</Link>
+                    <Link className="admin-btn admin-btn-ghost admin-btn-sm" href={`/management-portal/products/${item.id}`}>Edit</Link>
                     <button type="button" className="admin-btn admin-btn-red admin-btn-sm" onClick={() => remove(item.id)}>Delete</button>
                   </div>
                 </td>

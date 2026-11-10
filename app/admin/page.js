@@ -30,7 +30,7 @@ export default function AdminDashboardPage() {
           <h1>Dashboard</h1>
           <p>Overview of CMS content and form submissions.</p>
         </div>
-        <Link className="admin-btn" href="/admin/products/new">
+        <Link className="admin-btn" href="/management-portal/products/new">
           Add product
         </Link>
       </div>
@@ -66,10 +66,10 @@ export default function AdminDashboardPage() {
 
       <div className="admin-panel">
         <div className="admin-actions">
-          <Link className="admin-btn admin-btn-ghost" href="/admin/categories">Manage categories</Link>
-          <Link className="admin-btn admin-btn-ghost" href="/admin/subcategories">Manage subcategories</Link>
-          <Link className="admin-btn admin-btn-ghost" href="/admin/dealers">Dealer inquiries ({stats?.dealerTotal ?? 0})</Link>
-          <Link className="admin-btn admin-btn-ghost" href="/admin/contact-inquiries">Contact inquiries ({stats?.contactTotal ?? 0})</Link>
+          <Link className="admin-btn admin-btn-ghost" href="/management-portal/categories">Manage categories</Link>
+          <Link className="admin-btn admin-btn-ghost" href="/management-portal/subcategories">Manage subcategories</Link>
+          <Link className="admin-btn admin-btn-ghost" href="/management-portal/dealers">Dealer inquiries ({stats?.dealerTotal ?? 0})</Link>
+          <Link className="admin-btn admin-btn-ghost" href="/management-portal/contact-inquiries">Contact inquiries ({stats?.contactTotal ?? 0})</Link>
         </div>
       </div>
     </>

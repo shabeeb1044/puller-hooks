@@ -23,6 +23,18 @@ function normalizeTheme(value, fallback = 'black') {
   return fallback === 'yellow' ? 'yellow' : 'black';
 }
 
+function normalizeBannerAlign(value) {
+  if (value === 'center' || value === 'right') return value;
+  return 'left';
+}
+
+function normalizeBannerMaxWidth(value) {
+  if (value === '' || value == null) return '';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  return String(Math.min(120, Math.max(16, Math.round(n))));
+}
+
 function ThemePicker({ label = 'Section background', value, onChange, name }) {
   return (
     <div className="admin-field">
@@ -78,6 +90,8 @@ const emptyForm = {
   bannerVisible: true,
   modelsVisible: true,
   productsVisible: true,
+  bannerAlign: 'left',
+  bannerMaxWidth: '',
 };
 
 export default function SubcategoryForm({ subcategoryId }) {
@@ -131,6 +145,8 @@ export default function SubcategoryForm({ subcategoryId }) {
           bannerVisible: s.bannerVisible !== false,
           modelsVisible: s.modelsVisible !== false,
           productsVisible: s.productsVisible !== false,
+          bannerAlign: normalizeBannerAlign(s.bannerAlign),
+          bannerMaxWidth: normalizeBannerMaxWidth(s.bannerMaxWidth),
         });
         setError('');
         setSlugTouched(true);
@@ -171,10 +187,13 @@ export default function SubcategoryForm({ subcategoryId }) {
     setSaving(true);
     setError('');
     try {
+      const maxWidthRaw = String(form.bannerMaxWidth ?? '').trim();
       const payload = {
         ...form,
         description: form.modelsLead || form.description || '',
         sortOrder: Number(form.sortOrder) || 0,
+        bannerAlign: normalizeBannerAlign(form.bannerAlign),
+        bannerMaxWidth: maxWidthRaw === '' ? null : Number(maxWidthRaw),
         ...menuLinkPayload(form),
       };
       const res = await fetch(
@@ -188,7 +207,7 @@ export default function SubcategoryForm({ subcategoryId }) {
       const { data, error: parseError } = await parseJsonResponse(res);
       if (parseError) throw new Error(parseError);
       if (!res.ok) throw new Error(data?.error || 'Save failed');
-      router.push('/admin/subcategories');
+      router.push('/management-portal/subcategories');
       router.refresh();
     } catch (err) {
       setError(err.message || 'Save failed');
@@ -270,6 +289,40 @@ export default function SubcategoryForm({ subcategoryId }) {
           offLabel="Hidden"
         />
         <ThemePicker value={form.bannerTheme} onChange={(v) => setField('bannerTheme', v)} name="bannerTheme" />
+        <div className="admin-form-row">
+          <div className="admin-field">
+            <label htmlFor="bannerMaxWidth">Content max width (rem)</label>
+            <input
+              id="bannerMaxWidth"
+              type="number"
+              min={16}
+              max={120}
+              step={1}
+              value={form.bannerMaxWidth}
+              onChange={(e) => setField('bannerMaxWidth', e.target.value)}
+              placeholder="40"
+            />
+            <p className="hint">Leave blank for default (~40rem). Raise this to reduce empty space on the right.</p>
+          </div>
+          <div className="admin-field">
+            <label>Content alignment</label>
+            <div className="admin-radio-row" role="radiogroup" aria-label="Banner content alignment">
+              {['left', 'center', 'right'].map((align) => (
+                <label key={align} className="admin-radio">
+                  <input
+                    type="radio"
+                    name="bannerAlign"
+                    value={align}
+                    checked={form.bannerAlign === align}
+                    onChange={() => setField('bannerAlign', align)}
+                  />
+                  {align.charAt(0).toUpperCase() + align.slice(1)}
+                </label>
+              ))}
+            </div>
+            <p className="hint">Positions the banner text block left, center, or right.</p>
+          </div>
+        </div>
         <div className="admin-field">
           <label htmlFor="pageSubtitle">Subtitle</label>
           <input
@@ -342,13 +395,13 @@ export default function SubcategoryForm({ subcategoryId }) {
             <div className="admin-actions" style={{ margin: 0 }}>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/models/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+                href={`/management-portal/models/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
               >
                 Add model
               </a>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/models?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+                href={`/management-portal/models?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
               >
                 Manage models
               </a>
@@ -411,13 +464,13 @@ export default function SubcategoryForm({ subcategoryId }) {
             <div className="admin-actions" style={{ margin: 0 }}>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/products/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+                href={`/management-portal/products/new?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
               >
                 Add product
               </a>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/products?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
+                href={`/management-portal/products?categoryId=${form.categoryId}&subcategoryId=${subcategoryId}`}
               >
                 Manage products
               </a>
@@ -432,7 +485,7 @@ export default function SubcategoryForm({ subcategoryId }) {
         <button className="admin-btn" type="submit" disabled={saving}>
           {saving ? 'Saving…' : subcategoryId ? 'Update subcategory' : 'Create subcategory'}
         </button>
-        <button className="admin-btn admin-btn-ghost" type="button" onClick={() => router.push('/admin/subcategories')}>
+        <button className="admin-btn admin-btn-ghost" type="button" onClick={() => router.push('/management-portal/subcategories')}>
           Cancel
         </button>
       </div>

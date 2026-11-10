@@ -106,6 +106,25 @@ export default function CategoryPage({
     ? subcategory?.productsVisible !== false
     : category?.productsVisible !== false;
 
+  const bannerAlignRaw = isSubcategoryPage
+    ? subcategory?.bannerAlign || category?.bannerAlign
+    : category?.bannerAlign;
+  const bannerAlign =
+    bannerAlignRaw === 'center' || bannerAlignRaw === 'right' ? bannerAlignRaw : 'left';
+  const bannerMaxWidthRaw = isSubcategoryPage
+    ? subcategory?.bannerMaxWidth ?? category?.bannerMaxWidth
+    : category?.bannerMaxWidth;
+  const bannerMaxWidth =
+    Number.isFinite(Number(bannerMaxWidthRaw)) && Number(bannerMaxWidthRaw) > 0
+      ? Math.min(120, Math.max(16, Math.round(Number(bannerMaxWidthRaw))))
+      : null;
+  const bannerInnerClass = `container page-banner-inner${
+    bannerAlign !== 'left' ? ` page-banner-inner--${bannerAlign}` : ''
+  }`;
+  const bannerInnerStyle = bannerMaxWidth
+    ? { ['--banner-content-max']: `${bannerMaxWidth}rem` }
+    : undefined;
+
   // Name buttons: vertical layout, or any product without an image
   const isNameButton = (p) => p.layout === 'vertical' || !p.image;
   const flatVertical = products.filter(isNameButton);
@@ -128,7 +147,7 @@ export default function CategoryPage({
               <div className="page-banner-shade" aria-hidden="true"></div>
             </>
           ) : null}
-          <div className="container page-banner-inner">
+          <div className={bannerInnerClass} style={bannerInnerStyle}>
             <nav className={`crumbs${bannerImage && !bannerYellow ? ' crumbs--on-dark' : ''}`} aria-label="Breadcrumb">
               {crumbs.map((c, i) => (
                 <span key={`${c.label}-${i}`} style={{ display: 'contents' }}>
@@ -166,7 +185,7 @@ export default function CategoryPage({
               <RichHTML className="range-lead" html={category?.description} />
             </div>
             {image ? (
-              <figure className={`range-figure${!introYellow ? ' range-figure--light' : ''} reveal`}>
+              <figure className="range-figure reveal">
                 <img src={image} alt="" width="800" height="800" loading="lazy" decoding="async" />
               </figure>
             ) : null}

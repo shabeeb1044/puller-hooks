@@ -90,6 +90,21 @@ export default async function FlashStrikerPage() {
   const showModels = subcategory?.modelsVisible !== false;
   const showProducts = subcategory?.productsVisible !== false;
 
+  const bannerAlignRaw = subcategory?.bannerAlign || category?.bannerAlign;
+  const bannerAlign =
+    bannerAlignRaw === 'center' || bannerAlignRaw === 'right' ? bannerAlignRaw : 'left';
+  const bannerMaxWidthRaw = subcategory?.bannerMaxWidth ?? category?.bannerMaxWidth;
+  const bannerMaxWidth =
+    Number.isFinite(Number(bannerMaxWidthRaw)) && Number(bannerMaxWidthRaw) > 0
+      ? Math.min(120, Math.max(16, Math.round(Number(bannerMaxWidthRaw))))
+      : null;
+  const bannerInnerClass = `container page-banner-inner${
+    bannerAlign !== 'left' ? ` page-banner-inner--${bannerAlign}` : ''
+  }`;
+  const bannerInnerStyle = bannerMaxWidth
+    ? { ['--banner-content-max']: `${bannerMaxWidth}rem` }
+    : undefined;
+
   return (
     <main id="main">
       {showBanner ? (
@@ -105,7 +120,7 @@ export default async function FlashStrikerPage() {
               <div className="page-banner-shade" aria-hidden="true"></div>
             </>
           ) : null}
-          <div className="container page-banner-inner">
+          <div className={bannerInnerClass} style={bannerInnerStyle}>
             <nav className={`crumbs${bannerImage && !bannerYellow ? ' crumbs--on-dark' : ''}`} aria-label="Breadcrumb">
               <a href="/">Home</a>
               <span aria-hidden="true">/</span>

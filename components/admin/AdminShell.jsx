@@ -4,16 +4,18 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+const PORTAL = '/management-portal';
+
 const LINKS = [
-  { href: '/admin', label: 'Dashboard', exact: true },
-  { href: '/admin/products', label: 'Products' },
-  { href: '/admin/models', label: 'Models' },
-  { href: '/admin/categories', label: 'Categories' },
-  { href: '/admin/subcategories', label: 'Subcategories' },
-  { href: '/admin/dealer-network', label: 'Dealer Network' },
-  { href: '/admin/dealers', label: 'Dealers Inquiries' },
-  { href: '/admin/contact-inquiries', label: 'Contact Inquiries' },
-  { href: '/admin/settings', label: 'Settings' },
+  { href: PORTAL, label: 'Dashboard', exact: true },
+  { href: `${PORTAL}/products`, label: 'Products' },
+  { href: `${PORTAL}/models`, label: 'Models' },
+  { href: `${PORTAL}/categories`, label: 'Categories' },
+  { href: `${PORTAL}/subcategories`, label: 'Subcategories' },
+  { href: `${PORTAL}/dealer-network`, label: 'Dealer Network' },
+  { href: `${PORTAL}/dealers`, label: 'Dealers Inquiries' },
+  { href: `${PORTAL}/contact-inquiries`, label: 'Contact Inquiries' },
+  { href: `${PORTAL}/settings`, label: 'Settings' },
 ];
 
 function isActive(pathname, href, exact) {
@@ -54,7 +56,7 @@ export default function AdminShell({ children, googleSheetUrl = '' }) {
       <div className="admin-shell">
         <aside className="admin-sidebar">
           <div className="admin-brand">
-            <Link href="/admin" className="admin-brand-logo" aria-label="PULLER Admin – Dashboard">
+            <Link href={PORTAL} className="admin-brand-logo" aria-label="PULLER Admin – Dashboard">
               <img
                 src={darkMode ? '/images/og-image.png' : '/images/logo.webp'}
                 alt="PULLER"

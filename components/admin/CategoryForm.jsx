@@ -7,6 +7,7 @@ import MenuLinkFields from './MenuLinkFields';
 import RichTextField from './RichTextField';
 import ToggleSwitch from './ToggleSwitch';
 import { menuLinkPayload, normalizeMenuLinkType } from '@/lib/menuLinks';
+import { parseJsonResponse } from '@/lib/parseJsonResponse';
 
 function slugify(text) {
   return String(text || '')
@@ -20,6 +21,18 @@ function slugify(text) {
 function normalizeTheme(value, fallback = 'black') {
   if (value === 'yellow' || value === 'black') return value;
   return fallback === 'yellow' ? 'yellow' : 'black';
+}
+
+function normalizeBannerAlign(value) {
+  if (value === 'center' || value === 'right') return value;
+  return 'left';
+}
+
+function normalizeBannerMaxWidth(value) {
+  if (value === '' || value == null) return '';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  return String(Math.min(120, Math.max(16, Math.round(n))));
 }
 
 function ThemePicker({ label = 'Section background', value, onChange, name }) {
@@ -80,6 +93,8 @@ const emptyForm = {
   introVisible: true,
   modelsVisible: true,
   productsVisible: true,
+  bannerAlign: 'left',
+  bannerMaxWidth: '',
 };
 
 export default function CategoryForm({ categoryId }) {
@@ -95,8 +110,9 @@ export default function CategoryForm({ categoryId }) {
     if (!categoryId) return;
     fetch(`/api/admin/categories/${categoryId}`)
       .then(async (r) => {
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed to load');
+        const { data: d, error: parseError } = await parseJsonResponse(r);
+        if (parseError) throw new Error(parseError);
+        if (!r.ok) throw new Error(d?.error || 'Failed to load');
         const c = d.category;
         const legacy = c.pageTheme === 'yellow' ? 'yellow' : 'black';
         setForm({
@@ -129,7 +145,10 @@ export default function CategoryForm({ categoryId }) {
           introVisible: c.introVisible !== false,
           modelsVisible: c.modelsVisible !== false,
           productsVisible: c.productsVisible !== false,
+          bannerAlign: normalizeBannerAlign(c.bannerAlign),
+          bannerMaxWidth: normalizeBannerMaxWidth(c.bannerMaxWidth),
         });
+        setError('');
         setSlugTouched(true);
       })
       .catch((e) => setError(e.message));
@@ -173,9 +192,12 @@ export default function CategoryForm({ categoryId }) {
     setSaving(true);
     setError('');
     try {
+      const maxWidthRaw = String(form.bannerMaxWidth ?? '').trim();
       const payload = {
         ...form,
         sortOrder: Number(form.sortOrder) || 0,
+        bannerAlign: normalizeBannerAlign(form.bannerAlign),
+        bannerMaxWidth: maxWidthRaw === '' ? null : Number(maxWidthRaw),
         ...menuLinkPayload(form),
         // Keep legacy field in sync with products section for older readers
         pageTheme: form.productsTheme,
@@ -185,9 +207,10 @@ export default function CategoryForm({ categoryId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Save failed');
-      router.push('/admin/categories');
+      const { data, error: parseError } = await parseJsonResponse(res);
+      if (parseError) throw new Error(parseError);
+      if (!res.ok) throw new Error(data?.error || 'Save failed');
+      router.push('/management-portal/categories');
       router.refresh();
     } catch (err) {
       setError(err.message || 'Save failed');
@@ -258,6 +281,40 @@ export default function CategoryForm({ categoryId }) {
           offLabel="Hidden"
         />
         <ThemePicker value={form.bannerTheme} onChange={(v) => setField('bannerTheme', v)} name="bannerTheme" />
+        <div className="admin-form-row">
+          <div className="admin-field">
+            <label htmlFor="bannerMaxWidth">Content max width (rem)</label>
+            <input
+              id="bannerMaxWidth"
+              type="number"
+              min={16}
+              max={120}
+              step={1}
+              value={form.bannerMaxWidth}
+              onChange={(e) => setField('bannerMaxWidth', e.target.value)}
+              placeholder="40"
+            />
+            <p className="hint">Leave blank for default (~40rem). Raise this to reduce empty space on the right.</p>
+          </div>
+          <div className="admin-field">
+            <label>Content alignment</label>
+            <div className="admin-radio-row" role="radiogroup" aria-label="Banner content alignment">
+              {['left', 'center', 'right'].map((align) => (
+                <label key={align} className="admin-radio">
+                  <input
+                    type="radio"
+                    name="bannerAlign"
+                    value={align}
+                    checked={form.bannerAlign === align}
+                    onChange={() => setField('bannerAlign', align)}
+                  />
+                  {align.charAt(0).toUpperCase() + align.slice(1)}
+                </label>
+              ))}
+            </div>
+            <p className="hint">Positions the banner text block left, center, or right.</p>
+          </div>
+        </div>
         <div className="admin-field">
           <label htmlFor="pageSubtitle">Subtitle</label>
           <input
@@ -370,11 +427,11 @@ export default function CategoryForm({ categoryId }) {
             <div className="admin-actions" style={{ margin: 0 }}>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/models/new?categoryId=${categoryId}`}
+                href={`/management-portal/models/new?categoryId=${categoryId}`}
               >
                 Add model
               </a>
-              <a className="admin-btn admin-btn-ghost admin-btn-sm" href={`/admin/models?categoryId=${categoryId}`}>
+              <a className="admin-btn admin-btn-ghost admin-btn-sm" href={`/management-portal/models?categoryId=${categoryId}`}>
                 Manage models
               </a>
             </div>
@@ -438,13 +495,13 @@ export default function CategoryForm({ categoryId }) {
             <div className="admin-actions" style={{ margin: 0 }}>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/products/new?categoryId=${categoryId}&layout=horizontal`}
+                href={`/management-portal/products/new?categoryId=${categoryId}&layout=horizontal`}
               >
                 Add product
               </a>
               <a
                 className="admin-btn admin-btn-ghost admin-btn-sm"
-                href={`/admin/products?categoryId=${categoryId}`}
+                href={`/management-portal/products?categoryId=${categoryId}`}
               >
                 Manage products
               </a>
@@ -459,7 +516,7 @@ export default function CategoryForm({ categoryId }) {
         <button className="admin-btn" type="submit" disabled={saving}>
           {saving ? 'Saving…' : categoryId ? 'Update category' : 'Create category'}
         </button>
-        <button className="admin-btn admin-btn-ghost" type="button" onClick={() => router.push('/admin/categories')}>
+        <button className="admin-btn admin-btn-ghost" type="button" onClick={() => router.push('/management-portal/categories')}>
           Cancel
         </button>
       </div>
