@@ -3401,26 +3401,29 @@ body.modal-open { overflow: hidden; }
 }
 .dealer-card-country {
   margin: 0;
+  padding: 0 0 .95rem;
+  border-bottom: 1px solid #fff;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 1rem;
   line-height: 1.3;
   color: #fff;
+  transition: border-color .3s var(--ease);
+}
+.dealer-card:hover .dealer-card-country {
+  border-bottom-color: #fff;
 }
 .dealer-card-title {
   margin: 0;
-  padding: 0 0 .95rem;
-  border-bottom: 1px solid #2a2a2a;
   font-family: var(--font-body);
   font-weight: 400;
   font-size: .95rem;
   line-height: 1.6;
   color: #d4d8df;
-  transition: color .3s var(--ease), border-color .3s var(--ease);
+  transition: color .3s var(--ease);
 }
 .dealer-card:hover .dealer-card-title {
   color: #eceff3;
-  border-bottom-color: rgba(224, 36, 36, .45);
 }
 .dealer-card-address {
   margin: 0;
@@ -3449,6 +3452,7 @@ body.modal-open { overflow: hidden; }
   .dealer-card,
   .dealer-card::before,
   .dealer-card::after,
+  .dealer-card-country,
   .dealer-card-title,
   .dealer-card-address {
     transition: none;
@@ -3927,6 +3931,10 @@ body.modal-open { overflow: hidden; }
   font-size: clamp(1.05rem, 1.6vw, 1.18rem);
   font-weight: 500;
   line-height: 1.65;
+}
+/* Our Hook Range only — hooks intro, not the yellow lure intro */
+.range-intro:not(.range-intro--yellow) .range-lead {
+  margin-top: -10px !important;
 }
 .range-lead p {
   margin: 0 0 0.85em;

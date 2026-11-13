@@ -38,9 +38,6 @@ export default function DealerDirectory({ regions = [] }) {
           <h2 id="dealer-directory-title" className="section-title">
             Find an authorized PULLER dealer
           </h2>
-          <p className="dealer-directory-lead">
-            Browse our worldwide partner network. Each listing shows the partner name and address.
-          </p>
         </header>
 
         {totalDealers ? (
