@@ -53,22 +53,22 @@ export default async function FlashStrikerPage() {
   const catalogProducts = products.filter((p) => !isNameButton(p));
   const colourCount = catalogProducts.length || products.length || 38;
 
-  const eyebrow = subcategory?.pageSubtitle || 'PULLER Lures';
+  // Empty CMS copy stays empty — no hardcoded marketing defaults.
+  const eyebrow = subcategory?.pageSubtitle || '';
   const title =
     (!isBlankRichText(subcategory?.pageTitle) && subcategory?.pageTitle) ||
-    'Strong, Reliable, Built to Perform';
-  const lead =
-    subcategory?.pageLead ??
-    category?.pageLead ??
-    'PULLER Lures are engineered to deliver reliable, high-performance results in both saltwater and freshwater.';
+    subcategory?.name ||
+    'Flash Striker';
+  const lead = !isBlankRichText(subcategory?.pageLead)
+    ? subcategory.pageLead
+    : !isBlankRichText(category?.pageLead)
+      ? category.pageLead
+      : '';
 
-  const modelsEyebrow = subcategory?.modelsSubtitle || 'Available Models';
+  const modelsEyebrow = subcategory?.modelsSubtitle || '';
   const modelsTitle =
-    (!isBlankRichText(subcategory?.modelsTitle) && subcategory?.modelsTitle) || 'Seven sizes. One series.';
-  const modelsLead =
-    subcategory?.modelsLead ??
-    subcategory?.description ??
-    `Choose the FLASH STRIKER size that matches your water, target species and technique. FLASH STRIKER is available now in ${colourCount} colour patterns.`;
+    (!isBlankRichText(subcategory?.modelsTitle) && subcategory?.modelsTitle) || '';
+  const modelsLead = !isBlankRichText(subcategory?.modelsLead) ? subcategory.modelsLead : '';
 
   // Products catalog header: empty when CMS fields are blank — no hardcoded defaults.
   const productsEyebrow = !isBlankRichText(subcategory?.productsSubtitle)
@@ -110,7 +110,8 @@ export default async function FlashStrikerPage() {
       {showBanner ? (
         <section
           className={`page-banner flash-striker-banner${bannerYellow ? ' page-banner--yellow' : ''}`}
-          aria-labelledby="flash-striker-title"
+          aria-labelledby={title ? 'flash-striker-title' : undefined}
+          aria-label={title ? undefined : 'Flash Striker'}
         >
           {bannerImage && !bannerYellow ? (
             <>
@@ -130,9 +131,11 @@ export default async function FlashStrikerPage() {
               <span aria-hidden="true">/</span>
               <span aria-current="page">Flash Striker</span>
             </nav>
-            <p className="section-eyebrow">{eyebrow}</p>
-            <RichHTML id="flash-striker-title" as="h1" className="section-title" html={title} inline />
-            <RichHTML className="page-banner-lead" html={lead} />
+            {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
+            {title ? (
+              <RichHTML id="flash-striker-title" as="h1" className="section-title" html={title} inline />
+            ) : null}
+            {!isBlankRichText(lead) ? <RichHTML className="page-banner-lead" html={lead} /> : null}
           </div>
         </section>
       ) : null}
@@ -141,14 +144,21 @@ export default async function FlashStrikerPage() {
         <section
           className={`range-section${modelsYellow ? ' range-section--yellow' : ''}`}
           id="models"
-          aria-labelledby="models-title"
+          aria-labelledby={modelsTitle ? 'models-title' : undefined}
+          aria-label={modelsTitle ? undefined : 'Available models'}
         >
           <div className="container">
-            <header className="range-head reveal">
-              <p className="section-eyebrow">{modelsEyebrow}</p>
-              <RichHTML id="models-title" as="h2" className="section-title" html={modelsTitle} inline />
-              <RichHTML className="range-lead" html={modelsLead} />
-            </header>
+            {(modelsEyebrow || modelsTitle || !isBlankRichText(modelsLead)) ? (
+              <header className="range-head reveal">
+                {modelsEyebrow ? <p className="section-eyebrow">{modelsEyebrow}</p> : null}
+                {modelsTitle ? (
+                  <RichHTML id="models-title" as="h2" className="section-title" html={modelsTitle} inline />
+                ) : null}
+                {!isBlankRichText(modelsLead) ? (
+                  <RichHTML className="range-lead" html={modelsLead} />
+                ) : null}
+              </header>
+            ) : null}
             <div className="model-grid">
               {modelProducts.length > 0
                 ? modelProducts.map((product) => {
