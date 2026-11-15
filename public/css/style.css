@@ -291,16 +291,8 @@ html:has(.site-header.is-scrolled) { --header-sticky-h: 88px; }
   pointer-events: auto;
   transition: opacity .25s var(--ease), transform .25s var(--ease), visibility 0s;
 }
-@media (hover: hover) and (min-width: 821px) {
-  .has-dropdown:hover > .dropdown,
-  .has-dropdown:focus-within > .dropdown {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    pointer-events: auto;
-    transition: opacity .25s var(--ease), transform .25s var(--ease), visibility 0s;
-  }
-}
+/* Open state is driven only by .is-open (JS hover + click). CSS :hover/:focus-within
+   used to keep the panel visible after click-close while the pointer/focus stayed on +. */
 .dropdown li { position: relative; }
 /* Leaf links and # placeholder labels (no .nav-item) share the same type style */
 .dropdown > li > a,
@@ -584,7 +576,6 @@ html:has(.site-header.is-scrolled) { --header-sticky-h: 88px; }
   .page-banner .section-title,
   .flash-striker-banner .section-title,
   .pdp-copy .section-title,
-  .dealer-apply .contact-info .section-title,
   .underwater-showcase__copy .section-title,
   .story-audience-inner .section-title {
     font-size: 2rem;
@@ -1938,11 +1929,16 @@ body.modal-open { overflow: hidden; }
   .hero-cta { margin-top: 1.45rem; font-size: 1.2rem; }
   .hero-counter { display: none; }
   .hero-bg { background-position: center center; }
+  .hero-bg--3 {
+    background-size: cover;
+    background-position: center center;
+  }
   .apply-form { gap: .95rem; }
 }
 
 @media (max-width: 560px) {
   .hero-bg { background-position: center center; }
+  .hero-bg--3 { background-position: center center; }
   .hero-content { padding-block: 1.4rem 5rem; padding-inline: 0; }
   .hero-title { font-size: clamp(2rem, 10vw, 2.8rem); }
   .logo--footer img { height: 58px; }
@@ -2126,7 +2122,8 @@ body.modal-open { overflow: hidden; }
     font-size: 2rem;
   }
   .dealer-apply .contact-info .section-title {
-    font-size: 2rem;
+    font-size: 1.45rem;
+    line-height: 1.25;
   }
 }
 .product-hero__container {
@@ -3344,7 +3341,8 @@ body.modal-open { overflow: hidden; }
 .dealer-card {
   position: relative;
   background: #0c0c0c;
-  border: 1px solid #262626;
+  border: 3px solid #262626;
+  border-left-color: var(--red);
   min-height: 100%;
   overflow: hidden;
   transition:
@@ -3353,42 +3351,11 @@ body.modal-open { overflow: hidden; }
     box-shadow .3s var(--ease),
     background-color .3s var(--ease);
 }
-/* Top line — draws right → left on hover */
-.dealer-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  z-index: 2;
-  pointer-events: none;
-  background: var(--red);
-  transform: scaleX(0);
-  transform-origin: right center;
-  transition: transform .45s var(--ease);
-}
-.dealer-card::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--red);
-  transition: width .3s var(--ease);
-}
 .dealer-card:hover {
-  border-color: #3a3a3a;
+  border-color: var(--red);
   background: #111;
   transform: translateY(-3px);
   box-shadow: 0 16px 32px rgba(0, 0, 0, .4);
-}
-.dealer-card:hover::before {
-  transform: scaleX(1);
-}
-.dealer-card:hover::after {
-  width: 4px;
 }
 .dealer-card-inner {
   position: relative;
@@ -3402,16 +3369,12 @@ body.modal-open { overflow: hidden; }
 .dealer-card-country {
   margin: 0;
   padding: 0 0 .95rem;
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid var(--yellow);
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 1rem;
   line-height: 1.3;
   color: #fff;
-  transition: border-color .3s var(--ease);
-}
-.dealer-card:hover .dealer-card-country {
-  border-bottom-color: #fff;
 }
 .dealer-card-title {
   margin: 0;
@@ -3419,24 +3382,18 @@ body.modal-open { overflow: hidden; }
   font-weight: 400;
   font-size: .95rem;
   line-height: 1.6;
-  color: #d4d8df;
-  transition: color .3s var(--ease);
-}
-.dealer-card:hover .dealer-card-title {
-  color: #eceff3;
+  color: #fff;
 }
 .dealer-card-address {
   margin: 0;
   font-style: normal;
-  color: #d4d8df;
+  color: #fff;
   font-size: .95rem;
   line-height: 1.6;
   display: grid;
   gap: .2rem;
   max-width: 36ch;
-  transition: color .3s var(--ease);
 }
-.dealer-card:hover .dealer-card-address { color: #eceff3; }
 .dealer-directory-empty {
   margin: 0;
   padding: 1.5rem 0 0;
@@ -3450,15 +3407,12 @@ body.modal-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
   .dealer-card,
-  .dealer-card::before,
-  .dealer-card::after,
   .dealer-card-country,
   .dealer-card-title,
   .dealer-card-address {
     transition: none;
   }
   .dealer-card:hover { transform: none; }
-  .dealer-card::before { transform: scaleX(1); }
 }
 
 /* ---------------- Dealers page ---------------- */
@@ -3523,6 +3477,12 @@ body.modal-open { overflow: hidden; }
   line-height: 1.2;
   letter-spacing: .03em;
   margin-bottom: .85rem;
+}
+@media (max-width: 767px) {
+  .dealer-apply .contact-info .section-title {
+    font-size: 1.45rem;
+    line-height: 1.25;
+  }
 }
 .dealer-apply .contact-form--standalone .btn {
   justify-self: center;
@@ -4276,10 +4236,30 @@ body.modal-open { overflow: hidden; }
 /* ---------------- 404 Error Page ---------------- */
 .error-page {
   position: relative;
-  background: var(--black);
+  background: #000;
   min-height: calc(100vh - var(--header-h));
   display: flex;
   flex-direction: column;
+}
+
+.error-simple {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.25rem;
+  background: #000;
+}
+
+.error-simple__image {
+  display: block;
+  width: min(640px, 92vw);
+  height: auto;
+  background: #000;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 68%, transparent 86%);
+  mask-image: radial-gradient(ellipse at center, #000 68%, transparent 86%);
 }
 
 .error-hero {

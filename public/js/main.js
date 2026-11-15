@@ -20,12 +20,16 @@
   /* ---------- Mobile menu ---------- */
   const toggle = $('#navToggle');
   const nav = $('#mainNav');
+  const closeDropdownItem = (item) => {
+    if (!item) return;
+    item.classList.remove('is-open');
+    delete item.dataset.navPinnedClosed;
+    const btn = item.querySelector(':scope > .nav-item > .nav-plus');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  };
   const closeDropdowns = (root = nav) => {
-    $$('.has-dropdown.is-open', root).forEach((item) => {
-      item.classList.remove('is-open');
-      const btn = item.querySelector(':scope > .nav-item > .nav-plus');
-      if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
+    if (root.classList?.contains('has-dropdown')) closeDropdownItem(root);
+    $$('.has-dropdown.is-open', root).forEach(closeDropdownItem);
   };
   let menuScrollY = 0;
   const preventBackgroundScroll = (e) => {
@@ -58,13 +62,17 @@
       const open = !item.classList.contains('is-open');
       [...item.parentElement.children].forEach((sib) => {
         if (sib !== item && sib.classList.contains('has-dropdown')) {
-          sib.classList.remove('is-open');
-          const other = sib.querySelector(':scope > .nav-item > .nav-plus');
-          if (other) other.setAttribute('aria-expanded', 'false');
+          closeDropdowns(sib);
         }
       });
-      item.classList.toggle('is-open', open);
-      btn.setAttribute('aria-expanded', String(open));
+      if (open) {
+        delete item.dataset.navPinnedClosed;
+        item.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeDropdowns(item);
+        item.dataset.navPinnedClosed = '1';
+      }
     });
   });
   document.addEventListener('keydown', (e) => {
@@ -82,18 +90,24 @@
   const closeTimers = new WeakMap();
   $$('.has-dropdown', nav).forEach((item) => {
     const setOpen = (open) => {
-      item.classList.toggle('is-open', open);
+      if (open) {
+        item.classList.add('is-open');
+      } else {
+        closeDropdowns(item);
+      }
       const btn = item.querySelector(':scope > .nav-item > .nav-plus');
       if (btn) btn.setAttribute('aria-expanded', String(open));
     };
     item.addEventListener('mouseenter', () => {
       if (!desktopNav()) return;
+      if (item.dataset.navPinnedClosed === '1') return;
       const pending = closeTimers.get(item);
       if (pending) clearTimeout(pending);
       setOpen(true);
     });
     item.addEventListener('mouseleave', () => {
       if (!desktopNav()) return;
+      delete item.dataset.navPinnedClosed;
       const pending = setTimeout(() => setOpen(false), 320);
       closeTimers.set(item, pending);
     });
@@ -177,7 +191,7 @@
   const heroFiles = [
     ['images/hero-1-d.webp', 'images/hero-1-m.webp'],
     ['images/hero-2.webp', 'images/hero-2-mobile.webp'],
-    ['images/hero-3.webp', 'images/hero-3-mobile.webp'],
+    ['images/hero-3.webp', 'images/hero-3-mobile.webp?v=fill'],
   ];
   const paintSlide = (i) => {
     if (i === 0) return;

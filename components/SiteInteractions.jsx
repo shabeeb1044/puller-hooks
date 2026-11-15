@@ -35,12 +35,16 @@ export default function SiteInteractions({ socialLinks = DEFAULT_SOCIAL_LINKS })
     const toggle = $('#navToggle');
     const nav = $('#mainNav');
     if (toggle && nav) {
+      const closeDropdownItem = (item) => {
+        if (!item) return;
+        item.classList.remove('is-open');
+        delete item.dataset.navPinnedClosed;
+        const btn = item.querySelector(':scope > .nav-item > .nav-plus');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      };
       const closeDropdowns = (root = nav) => {
-        $$('.has-dropdown.is-open', root).forEach((item) => {
-          item.classList.remove('is-open');
-          const btn = item.querySelector(':scope > .nav-item > .nav-plus');
-          if (btn) btn.setAttribute('aria-expanded', 'false');
-        });
+        if (root.classList?.contains('has-dropdown')) closeDropdownItem(root);
+        $$('.has-dropdown.is-open', root).forEach(closeDropdownItem);
       };
       let menuScrollY = 0;
       const preventBackgroundScroll = (e) => {
@@ -82,13 +86,18 @@ export default function SiteInteractions({ socialLinks = DEFAULT_SOCIAL_LINKS })
         const open = !item.classList.contains('is-open');
         [...item.parentElement.children].forEach((sib) => {
           if (sib !== item && sib.classList.contains('has-dropdown')) {
-            sib.classList.remove('is-open');
-            const other = sib.querySelector(':scope > .nav-item > .nav-plus');
-            if (other) other.setAttribute('aria-expanded', 'false');
+            closeDropdowns(sib);
           }
         });
-        item.classList.toggle('is-open', open);
-        btn.setAttribute('aria-expanded', String(open));
+        if (open) {
+          delete item.dataset.navPinnedClosed;
+          item.classList.add('is-open');
+          btn.setAttribute('aria-expanded', 'true');
+        } else {
+          // Close this item and nested menus; stay closed until the pointer leaves.
+          closeDropdowns(item);
+          item.dataset.navPinnedClosed = '1';
+        }
       };
       plusBtns.forEach((btn) => btn.addEventListener('click', onPlus));
       cleanups.push(() => plusBtns.forEach((btn) => btn.removeEventListener('click', onPlus)));
@@ -119,18 +128,24 @@ export default function SiteInteractions({ socialLinks = DEFAULT_SOCIAL_LINKS })
       const closeTimers = new WeakMap();
       $$('.has-dropdown', nav).forEach((item) => {
         const setOpen = (open) => {
-          item.classList.toggle('is-open', open);
+          if (open) {
+            item.classList.add('is-open');
+          } else {
+            closeDropdowns(item);
+          }
           const btn = item.querySelector(':scope > .nav-item > .nav-plus');
           if (btn) btn.setAttribute('aria-expanded', String(open));
         };
         const onEnter = () => {
           if (!desktopNav()) return;
+          if (item.dataset.navPinnedClosed === '1') return;
           const pending = closeTimers.get(item);
           if (pending) clearTimeout(pending);
           setOpen(true);
         };
         const onLeave = () => {
           if (!desktopNav()) return;
+          delete item.dataset.navPinnedClosed;
           const pending = setTimeout(() => setOpen(false), 320);
           closeTimers.set(item, pending);
         };
@@ -218,7 +233,7 @@ export default function SiteInteractions({ socialLinks = DEFAULT_SOCIAL_LINKS })
       const heroFiles = [
         ['/images/hero-1-d.webp', '/images/hero-1-m.webp'],
         ['/images/hero-2.webp', '/images/hero-2-mobile.webp'],
-        ['/images/hero-3.webp', '/images/hero-3-mobile.webp'],
+        ['/images/hero-3.webp', '/images/hero-3-mobile.webp?v=fill'],
       ];
       let index = 0;
       let timer = null;
